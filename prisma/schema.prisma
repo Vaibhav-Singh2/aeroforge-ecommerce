@@ -1,0 +1,392 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  clerkUserId String   @unique
+  name        String
+  email       String   @unique
+  imageUrl    String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  addresses    Address[]
+  orders       Order[]
+  cartItems    CartItem[]
+  reviews      Review[]
+  repairOrders RepairOrder[]
+  printOrders  PrintOrder[]
+}
+
+model Category {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  parentId    String?    @db.ObjectId
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Category[] @relation("CategoryHierarchy")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  products Product[]
+}
+
+enum ProductType {
+  READY_MADE_DRONE
+  READY_MADE_PLANE
+  ACCESSORY
+  PART
+  PRINTING_MATERIAL
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+model Product {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  slug          String        @unique
+  description   String
+  shortDesc     String?
+  sku           String        @unique
+  type          ProductType
+  status        ProductStatus @default(ACTIVE)
+  price         Float
+  comparePrice  Float?
+  costPrice     Float?
+  trackQuantity Boolean       @default(true)
+  quantity      Int           @default(0)
+  lowStockAlert Int?
+  weight        Float?
+  dimensions    Json? // {length, width, height}
+  images        String[]
+  tags          String[]
+  metaTitle     String?
+  metaDesc      String?
+  isFeature     Boolean       @default(false)
+  isBestseller  Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  categoryId String           @db.ObjectId
+  category   Category         @relation(fields: [categoryId], references: [id])
+  variants   ProductVariant[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+
+  // Specific fields for drones/planes
+  specifications  Json? // Technical specs like flight time, range, etc.
+  compatibleParts String[] @db.ObjectId // Compatible parts/accessories
+}
+
+model ProductVariant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String // e.g., "Red", "Large", "V2"
+  sku       String   @unique
+  price     Float? // Override product price if different
+  quantity  Int      @default(0)
+  image     String?
+  options   Json // {color: "red", size: "large"}
+  createdAt DateTime @default(now())
+
+  // Relations
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // "billing" or "shipping"
+  firstName String
+  lastName  String
+  company   String?
+  address1  String
+  address2  String?
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  phone     String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  orders Order[]
+}
+
+model CartItem {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String          @db.ObjectId
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String          @db.ObjectId
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([userId, productId, variantId])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+model Order {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber    String        @unique
+  userId         String        @db.ObjectId
+  user           User          @relation(fields: [userId], references: [id])
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  subtotal       Float
+  taxAmount      Float         @default(0)
+  shippingAmount Float         @default(0)
+  discountAmount Float         @default(0)
+  totalAmount    Float
+  currency       String        @default("USD")
+
+  // Shipping
+  shippingAddressId String?  @db.ObjectId
+  shippingAddress   Address? @relation(fields: [shippingAddressId], references: [id])
+  shippingMethod    String?
+  trackingNumber    String?
+
+  // Payment
+  paymentMethod   String?
+  paymentIntentId String?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+
+  // Relations
+  items OrderItem[]
+
+  // Notes
+  customerNotes String?
+  adminNotes    String?
+}
+
+model OrderItem {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String          @db.ObjectId
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String          @db.ObjectId
+  product   Product         @relation(fields: [productId], references: [id])
+  variantId String?         @db.ObjectId
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  quantity  Int
+  price     Float // Price at time of order
+  name      String // Product name at time of order
+  image     String? // Product image at time of order
+}
+
+model Review {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId  String   @db.ObjectId
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating     Int // 1-5 stars
+  title      String?
+  comment    String?
+  images     String[]
+  isVerified Boolean  @default(false) // Verified purchase
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// Repair Service Models
+enum RepairStatus {
+  QUOTE_REQUESTED
+  QUOTE_SENT
+  QUOTE_APPROVED
+  IN_PROGRESS
+  COMPLETED
+  READY_FOR_PICKUP
+  DELIVERED
+  CANCELLED
+}
+
+model RepairOrder {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  repairNumber String       @unique
+  userId       String       @db.ObjectId
+  user         User         @relation(fields: [userId], references: [id])
+  status       RepairStatus @default(QUOTE_REQUESTED)
+
+  // Device Info
+  deviceType       String // "drone", "plane", etc.
+  deviceModel      String
+  deviceBrand      String?
+  issueDescription String
+  images           String[]
+
+  // Repair Details
+  diagnosisNotes String?
+  repairNotes    String?
+  partsUsed      Json[] // Array of parts with quantities and prices
+  laborHours     Float?
+  laborRate      Float?
+
+  // Pricing
+  estimatedCost Float?
+  finalCost     Float?
+  paidAmount    Float  @default(0)
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  quoteSentAt     DateTime?
+  quoteApprovedAt DateTime?
+  completedAt     DateTime?
+
+  // Customer info
+  customerNotes String?
+  adminNotes    String?
+  contactPhone  String?
+}
+
+// 3D Printing Service Models
+enum PrintStatus {
+  QUOTE_REQUESTED
+  QUOTE_SENT
+  QUOTE_APPROVED
+  QUEUED
+  PRINTING
+  POST_PROCESSING
+  COMPLETED
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PrintMaterial {
+  PLA
+  ABS
+  PETG
+  TPU
+  WOOD_FILL
+  METAL_FILL
+  CARBON_FIBER
+  RESIN
+}
+
+model PrintOrder {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  printNumber String      @unique
+  userId      String      @db.ObjectId
+  user        User        @relation(fields: [userId], references: [id])
+  status      PrintStatus @default(QUOTE_REQUESTED)
+
+  // Print Job Details
+  projectName  String
+  description  String?
+  fileUrls     String[] // STL, OBJ files
+  images       String[] // Preview images
+  quantity     Int           @default(1)
+  material     PrintMaterial
+  color        String?
+  infill       Int? // Percentage
+  layerHeight  Float? // mm
+  printQuality String? // "draft", "normal", "high"
+
+  // Specifications
+  estimatedVolume Float? // cm³
+  estimatedWeight Float? // grams
+  estimatedTime   Int? // minutes
+
+  // Pricing
+  materialCost Float?
+  laborCost    Float?
+  rushFee      Float? @default(0)
+  totalCost    Float?
+  paidAmount   Float  @default(0)
+
+  // Options
+  isRush         Boolean  @default(false)
+  needsSupports  Boolean  @default(false)
+  postProcessing String[] // ["sanding", "painting", "assembly"]
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  quoteSentAt     DateTime?
+  quoteApprovedAt DateTime?
+  printStartedAt  DateTime?
+  completedAt     DateTime?
+
+  // Notes
+  customerNotes String?
+  adminNotes    String?
+  printSettings Json? // Detailed printer settings
+}
+
+// Settings and Configuration
+model SiteSettings {
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  siteName        String  @default("Drone Store")
+  siteDescription String?
+  logoUrl         String?
+  faviconUrl      String?
+  contactEmail    String?
+  contactPhone    String?
+  address         Json?
+  socialLinks     Json?
+
+  // Business Settings
+  currency      String @default("INR")
+  taxRate       Float  @default(0)
+  shippingRates Json[] // Shipping options and rates
+
+  // Feature Flags
+  enableReviews    Boolean @default(true)
+  enableRepairs    Boolean @default(true)
+  enable3DPrinting Boolean @default(true)
+  maintenanceMode  Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+}
