@@ -24,31 +24,30 @@ model User {
   reviews      Review[]
   repairOrders RepairOrder[]
   printOrders  PrintOrder[]
+
+  @@map("users")
 }
 
 model Category {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  name        String     @unique
-  slug        String     @unique
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  name        String      @unique
+  slug        String      @unique
   description String?
   imageUrl    String?
-  parentId    String?    @db.ObjectId
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    Category[] @relation("CategoryHierarchy")
-  isActive    Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  type        ProductType
 
   // Relations
   products Product[]
+
+  @@map("categories")
 }
 
 enum ProductType {
-  READY_MADE_DRONE
-  READY_MADE_PLANE
-  ACCESSORY
-  PART
-  PRINTING_MATERIAL
+  READY_MADE_PROJECT
+  PART_AND_ACCESSORY
 }
 
 enum ProductStatus {
@@ -63,22 +62,14 @@ model Product {
   name          String
   slug          String        @unique
   description   String
-  shortDesc     String?
   sku           String        @unique
-  type          ProductType
   status        ProductStatus @default(ACTIVE)
   price         Float
-  comparePrice  Float?
-  costPrice     Float?
   trackQuantity Boolean       @default(true)
   quantity      Int           @default(0)
-  lowStockAlert Int?
   weight        Float?
-  dimensions    Json? // {length, width, height}
   images        String[]
   tags          String[]
-  metaTitle     String?
-  metaDesc      String?
   isFeature     Boolean       @default(false)
   isBestseller  Boolean       @default(false)
   createdAt     DateTime      @default(now())
@@ -95,6 +86,8 @@ model Product {
   // Specific fields for drones/planes
   specifications  Json? // Technical specs like flight time, range, etc.
   compatibleParts String[] @db.ObjectId // Compatible parts/accessories
+
+  @@map("products")
 }
 
 model ProductVariant {
@@ -112,6 +105,8 @@ model ProductVariant {
   // Relations
   cartItems  CartItem[]
   orderItems OrderItem[]
+
+  @@map("product_variants")
 }
 
 model Address {
@@ -134,6 +129,8 @@ model Address {
 
   // Relations
   orders Order[]
+
+  @@map("addresses")
 }
 
 model CartItem {
@@ -149,6 +146,7 @@ model CartItem {
   updatedAt DateTime        @updatedAt
 
   @@unique([userId, productId, variantId])
+  @@map("cart_items")
 }
 
 enum OrderStatus {
@@ -205,6 +203,8 @@ model Order {
   // Notes
   customerNotes String?
   adminNotes    String?
+
+  @@map("orders")
 }
 
 model OrderItem {
@@ -219,6 +219,8 @@ model OrderItem {
   price     Float // Price at time of order
   name      String // Product name at time of order
   image     String? // Product image at time of order
+
+  @@map("order_items")
 }
 
 model Review {
@@ -236,6 +238,7 @@ model Review {
   createdAt  DateTime @default(now())
 
   @@unique([userId, productId])
+  @@map("reviews")
 }
 
 // Repair Service Models
@@ -287,6 +290,8 @@ model RepairOrder {
   customerNotes String?
   adminNotes    String?
   contactPhone  String?
+
+  @@map("repair_orders")
 }
 
 // 3D Printing Service Models
@@ -363,6 +368,8 @@ model PrintOrder {
   customerNotes String?
   adminNotes    String?
   printSettings Json? // Detailed printer settings
+
+  @@map("print_orders")
 }
 
 // Settings and Configuration
@@ -389,4 +396,6 @@ model SiteSettings {
   maintenanceMode  Boolean @default(false)
 
   updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
 }

@@ -2,20 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+// import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
 import {
   Plane,
-  PlaneTakeoff,
   Wrench,
   Cog,
   LucideIcon,
   ShoppingBag,
   Home,
-  Component,
   Printer,
 } from "lucide-react";
 
@@ -32,24 +30,14 @@ const navItems: NavItem[] = [
     icon: Home,
   },
   {
-    title: "Drones",
-    href: "/category/drones",
+    title: "Projects",
+    href: "/category/projects",
     icon: Plane,
   },
   {
-    title: "Planes",
-    href: "/category/planes",
-    icon: PlaneTakeoff,
-  },
-  {
-    title: "Accessories",
-    href: "/category/accessories",
+    title: "Parts & Accessories",
+    href: "/category/parts-and-accessories",
     icon: ShoppingBag,
-  },
-  {
-    title: "Parts",
-    href: "/category/parts",
-    icon: Component,
   },
   {
     title: "Repair Services",
@@ -57,8 +45,8 @@ const navItems: NavItem[] = [
     icon: Wrench,
   },
   {
-    title: "3D Printing",
-    href: "/services/printing",
+    title: "3D Printing Services",
+    href: "/services/3d-printing",
     icon: Printer,
   },
   {
@@ -76,11 +64,11 @@ export function MobileNav({ onClose }: MobileNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm md:hidden">
-      <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-background shadow-lg">
-        <div className="flex h-16 items-center justify-between px-4 border-b">
+    <div className="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm md:hidden">
+      <div className="bg-background fixed inset-y-0 right-0 w-full max-w-xs shadow-lg">
+        <div className="flex h-16 items-center justify-between border-b px-4">
           <Link href="/" onClick={onClose} className="flex items-center">
-            <span className="font-bold text-xl">DroneShop</span>
+            <span className="text-xl font-bold">{`Anubhav Projects's Lab`}</span>
           </Link>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <span className="sr-only">Close</span>
@@ -109,10 +97,10 @@ export function MobileNav({ onClose }: MobileNavProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 text-base font-medium rounded-md transition-colors",
+                    "flex items-center gap-2 rounded-md px-3 py-2 text-base font-medium transition-colors",
                     pathname === item.href
                       ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   )}
                 >
                   <Icon className="h-5 w-5" />

@@ -7,27 +7,29 @@ import { Separator } from "@/components/ui/separator";
 
 export function SiteFooter() {
   return (
-    <footer className="bg-muted/40">
+    <footer className="bg-muted/40 overflow-hidden px-5">
       <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
               <Plane className="h-6 w-6" />
-              <span className="font-bold text-xl">DroneShop</span>
+              <span className="text-xl font-bold">
+                {"Anubhav Projects's Lab"}
+              </span>
             </Link>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-4 text-sm">
               Your one-stop shop for premium drones, planes, accessories, repair
               services, and 3D printing solutions.
             </p>
           </div>
 
           <div className="md:col-span-1">
-            <h3 className="font-medium text-base mb-4">Shop</h3>
+            <h3 className="mb-4 text-base font-medium">Shop</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/category/drones"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Drones
                 </Link>
@@ -35,7 +37,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/category/planes"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Planes
                 </Link>
@@ -43,7 +45,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/category/accessories"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Accessories
                 </Link>
@@ -51,7 +53,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/category/parts"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Parts
                 </Link>
@@ -59,7 +61,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/deals"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Deals & Discounts
                 </Link>
@@ -68,12 +70,12 @@ export function SiteFooter() {
           </div>
 
           <div className="md:col-span-1">
-            <h3 className="font-medium text-base mb-4">Services</h3>
+            <h3 className="mb-4 text-base font-medium">Services</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/services/repair"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Repair Services
                 </Link>
@@ -81,7 +83,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/services/printing"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   3D Printing
                 </Link>
@@ -89,7 +91,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/support"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Support
                 </Link>
@@ -97,7 +99,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/shipping"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Shipping & Delivery
                 </Link>
@@ -105,7 +107,7 @@ export function SiteFooter() {
               <li>
                 <Link
                   href="/returns"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                 >
                   Returns & Refunds
                 </Link>
@@ -114,8 +116,8 @@ export function SiteFooter() {
           </div>
 
           <div className="md:col-span-1">
-            <h3 className="font-medium text-base mb-4">Stay Updated</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <h3 className="mb-4 text-base font-medium">Stay Updated</h3>
+            <p className="text-muted-foreground mb-4 text-sm">
               Subscribe to our newsletter for the latest products and offers.
             </p>
             <div className="flex gap-2">
@@ -127,7 +129,7 @@ export function SiteFooter() {
               <Button size="sm">Subscribe</Button>
             </div>
             <div className="mt-6">
-              <h4 className="text-sm font-medium mb-2">Follow Us</h4>
+              <h4 className="mb-2 text-sm font-medium">Follow Us</h4>
               <div className="flex gap-4">
                 <Link
                   href="#"
@@ -215,28 +217,29 @@ export function SiteFooter() {
 
         <Separator className="my-8" />
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="text-center md:text-left">
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} DroneShop. All rights reserved.
+            <p className="text-muted-foreground text-sm">
+              &copy; {new Date().getFullYear()} {`Anubhav Projects's Lab`}. All
+              rights reserved.
             </p>
           </div>
           <div className="flex gap-6">
             <Link
               href="/privacy"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
             >
               Terms of Service
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
             >
               Contact Us
             </Link>

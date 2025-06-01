@@ -1,10 +1,10 @@
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowRight, Wrench, Printer } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, Wrench, Printer } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function ServicesSection() {
   return (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { MainNav } from "@/components/layouts/main-nav";
 import { MobileNav } from "@/components/layouts/mobile-nav";
 // import { useCartStore } from "@/lib/stores/cart-store"
 import { ThemeToggle } from "../themeToggle";
-import { Badge } from "@/components/ui/badge";
 
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -41,19 +40,19 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-200",
+        "sticky top-0 z-50 w-full px-5 transition-all duration-200",
         isScrolled
-          ? "bg-background/95 backdrop-blur-sm border-b shadow-sm"
-          : "bg-transparent"
+          ? "bg-background/95 border-b shadow-sm backdrop-blur-sm"
+          : "bg-transparent",
       )}
     >
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl hidden md:inline-block">
-              DroneShop
+            <span className="hidden text-xl font-bold md:inline-block">
+              {"Anubhav Projects's Lab"}
             </span>
-            <span className="font-bold text-xl md:hidden">DS</span>
+            <span className="text-xl font-bold md:hidden">DS</span>
           </Link>
           <MainNav />
         </div>
@@ -65,7 +64,7 @@ export function SiteHeader() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
-                className="transition-all duration-200 hover:bg-muted"
+                className="hover:bg-muted transition-all duration-200"
               >
                 <Search className="h-5 w-5" />
                 <span className="sr-only">Search</span>
@@ -101,11 +100,11 @@ export function SiteHeader() {
               </Button>
             </>
           ) : (
-            <div className="flex items-center w-full md:w-auto">
+            <div className="flex w-full items-center md:w-auto">
               <input
                 type="search"
                 placeholder="Search products..."
-                className="flex h-9 rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full md:w-[300px]"
+                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-all focus-visible:ring-1 focus-visible:outline-none md:w-[300px]"
               />
               <Button
                 variant="ghost"

@@ -11,6 +11,20 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/photos/**",
       },
+      // allow all images from the Unsplash domain
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/photo-**",
+      },
+      // allow all images from the Picsum domain
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };
