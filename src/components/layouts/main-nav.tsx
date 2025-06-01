@@ -31,7 +31,7 @@ export function MainNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="gap-6 md:flex">
+    <nav className="hidden gap-6 lg:flex">
       {navItems.map((item) => (
         <Link
           key={item.href}

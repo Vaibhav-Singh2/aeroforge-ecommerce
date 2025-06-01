@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ShoppingCart,
   Heart,
-  Star,
   SlidersHorizontal,
   ChevronRight,
 } from "lucide-react";
@@ -26,15 +25,15 @@ import prisma from "@/lib/prisma";
 export default async function CategoryPage({
   params,
 }: {
-  params: Promise<{ type: "projects" | "parts-and-accessories" }>;
+  params: Promise<{ slug: "projects" | "parts-and-accessories" }>;
 }) {
-  const type = (await params).type;
+  const [type, category] = (await params).slug;
 
   if (type !== "projects" && type !== "parts-and-accessories") {
     notFound();
   }
 
-  const category = await prisma.category.findMany({
+  const categoryList = await prisma.category.findMany({
     where: {
       type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
     },
@@ -52,8 +51,9 @@ export default async function CategoryPage({
 
   const products = await prisma.product.findMany({
     where: {
-      categoryId: {
-        in: category.map((cat) => cat.id),
+      category: {
+        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
+        slug: category || undefined,
       },
     },
     include: {
@@ -77,16 +77,39 @@ export default async function CategoryPage({
           Home
         </Link>
         <ChevronRight className="mx-1 h-4 w-4" />
-        <span className="text-foreground">{"Ready Made Projects"}</span>
+        <Link
+          className={!category ? "text-foreground" : "text-muted-foreground"}
+          href={`/category/${type}`}
+        >
+          {type === "projects"
+            ? "Ready Made Projects"
+            : "Parts and Accessories"}
+        </Link>
+        {category && (
+          <>
+            <ChevronRight className="mx-1 h-4 w-4" />
+            <Link
+              className="text-foreground"
+              href={`/category/${type}/${category}`}
+            >
+              {categoryList.find((cat) => cat.slug === category)?.name}
+            </Link>
+          </>
+        )}
       </div>
 
-      {/* Category Header */}
+      {/* Header */}
       <div className="relative mb-8 h-[300px] overflow-hidden rounded-lg">
         <Image
+          // TODO: Replace with dynamic image based on category
           src={
             "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
           }
-          alt={"Ready Made Projects"}
+          alt={
+            type === "projects"
+              ? "Ready Made Projects"
+              : "Parts and Accessories"
+          }
           fill
           className="object-cover"
         />
@@ -94,7 +117,9 @@ export default async function CategoryPage({
           <div className="container">
             <div className="max-w-2xl">
               <h1 className="mb-4 text-4xl font-bold">
-                {"Ready Made Projects"}
+                {type === "projects"
+                  ? "Ready Made Projects"
+                  : "Parts and Accessories"}
               </h1>
               <p className="text-muted-foreground text-lg">
                 {
@@ -110,23 +135,51 @@ export default async function CategoryPage({
         {/* Filters Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-6">
-            <div>
-              <h3 className="mb-3 font-medium">Subcategories</h3>
+            {/* Categories (Desktop Only) */}
+            <div className="max-lg:hidden">
+              <h3 className="mb-3 font-medium">Categories</h3>
               <div className="space-y-1">
-                {category.map((subcat) => (
-                  <button
-                    key={subcat.id}
-                    className="hover:bg-muted w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors"
+                {categoryList.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/category/${type}/${cat.slug}`}
+                    className={`hover:bg-muted flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors ${
+                      cat.slug === category
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground"
+                    }`}
                   >
-                    {subcat.name}
-                  </button>
+                    {cat.name}
+                  </Link>
                 ))}
               </div>
             </div>
 
+            {/* Categories (Mobile Only) */}
+            <div className="lg:hidden">
+              <h3 className="mb-3 font-medium">Categories</h3>
+              <Select defaultValue={category || "all"}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <Link href={`/category/${type}`}>
+                    <SelectItem value="all">All Categories</SelectItem>
+                  </Link>
+                  {categoryList.map((cat) => (
+                    <Link key={cat.id} href={`/category/${type}/${cat.slug}`}>
+                      <SelectItem key={cat.id} value={cat.slug}>
+                        {cat.name}
+                      </SelectItem>
+                    </Link>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <Separator />
 
-            <div>
+            {/* <div>
               <h3 className="mb-3 font-medium">Price Range</h3>
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -180,7 +233,7 @@ export default async function CategoryPage({
                   <span className="text-sm">On Sale</span>
                 </label>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

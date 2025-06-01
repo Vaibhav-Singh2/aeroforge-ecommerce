@@ -64,7 +64,7 @@ export function MobileNav({ onClose }: MobileNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm md:hidden">
+    <div className="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm lg:hidden">
       <div className="bg-background fixed inset-y-0 right-0 w-full max-w-xs shadow-lg">
         <div className="flex h-16 items-center justify-between border-b px-4">
           <Link href="/" onClick={onClose} className="flex items-center">
