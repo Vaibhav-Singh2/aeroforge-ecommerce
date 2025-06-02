@@ -20,14 +20,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SortDropdown } from "@/components/ui/sort-dropdown";
+import { PaginationControl } from "@/components/ui/pagination-control";
 import prisma from "@/lib/prisma";
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: "projects" | "parts-and-accessories" }>;
+  searchParams: Promise<{ page?: string; sort?: string }>;
 }) {
   const [type, category] = (await params).slug;
+  const awaitedSearchParams = await searchParams;
+  const currentPage = awaitedSearchParams.page
+    ? parseInt(awaitedSearchParams.page)
+    : 1;
+  const itemsPerPage = 15;
+  const sortOption = awaitedSearchParams.sort || "newest";
 
   if (type !== "projects" && type !== "parts-and-accessories") {
     notFound();
@@ -48,6 +58,37 @@ export default async function CategoryPage({
       },
     },
   });
+  // Determine the sort order based on the sort parameter
+  type OrderByOption = Record<string, "asc" | "desc">;
+  let orderBy: OrderByOption = { createdAt: "desc" };
+  switch (sortOption) {
+    case "newest":
+      orderBy = { createdAt: "desc" };
+      break;
+    case "price-asc":
+      orderBy = { price: "asc" };
+      break;
+    case "price-desc":
+      orderBy = { price: "desc" };
+      break;
+    case "featured":
+      orderBy = { isBestseller: "desc" };
+      break;
+    // Add other sort options as needed
+  }
+
+  // Get total count for pagination
+  const totalItems = await prisma.product.count({
+    where: {
+      category: {
+        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
+        slug: category || undefined,
+      },
+    },
+  });
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const skip = (currentPage - 1) * itemsPerPage;
 
   const products = await prisma.product.findMany({
     where: {
@@ -64,28 +105,10 @@ export default async function CategoryPage({
         },
       },
     },
-    take: 15,
-    orderBy: {
-      createdAt: "desc",
-    },
+    skip,
+    take: itemsPerPage,
+    orderBy,
   });
-
-  const totalProducts = categoryList.reduce((acc, cat) => {
-    return acc + (cat._count.products || 0);
-  }, 0);
-
-  const productsCount = await prisma.product.count({
-    where: {
-      category: {
-        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
-        slug: category || undefined,
-      },
-    },
-  });
-
-  console.log(`Category: ${category}, Type: ${type}`);
-  console.log(`Total Products: ${totalProducts}`);
-  console.log(`Products Count: ${productsCount}`);
 
   return (
     <div className="container px-5 py-8">
@@ -194,64 +217,7 @@ export default async function CategoryPage({
                 </SelectContent>
               </Select>
             </div>
-
             <Separator />
-
-            {/* <div>
-              <h3 className="mb-3 font-medium">Price Range</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className="w-full rounded-md border px-3 py-1 text-sm"
-                />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className="w-full rounded-md border px-3 py-1 text-sm"
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="mb-3 font-medium">Rating</h3>
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <button
-                    key={rating}
-                    className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
-                  >
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground fill-muted"}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-muted-foreground">& Up</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="mb-3 font-medium">Availability</h3>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">In Stock</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">On Sale</span>
-                </label>
-              </div>
-            </div> */}
           </div>
         </div>
 
@@ -263,28 +229,26 @@ export default async function CategoryPage({
               <Button variant="outline" size="sm">
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filters
-              </Button>
+              </Button>{" "}
               <p className="text-muted-foreground text-sm">
-                Showing <span className="text-foreground font-medium">20</span>{" "}
-                of <span className="text-foreground font-medium">48</span>{" "}
+                Showing{" "}
+                <span className="text-foreground font-medium">
+                  {products.length}
+                </span>{" "}
+                of{" "}
+                <span className="text-foreground font-medium">
+                  {totalItems}
+                </span>{" "}
                 products
               </p>
-            </div>
-
-            <Select defaultValue="featured">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="featured">Featured</SelectItem>
-                <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                <SelectItem value="rating">Best Rating</SelectItem>
-              </SelectContent>
-            </Select>
+            </div>{" "}
+            <SortDropdown
+              currentSort={sortOption}
+              currentPage={currentPage}
+              type={type}
+              category={category}
+            />
           </div>
-
           {/* Products */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
@@ -340,28 +304,10 @@ export default async function CategoryPage({
                   <Link href={product.slug} className="hover:underline">
                     <h3 className="line-clamp-1 font-medium">{product.name}</h3>
                   </Link>
-                  {/* <div className="mt-1 flex items-center gap-1">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3.5 w-3.5 ${i < Math.floor(product.rating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground fill-muted"}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-muted-foreground text-xs">
-                      ({product.reviewCount})
-                    </span>
-                  </div> */}
                   <div className="mt-2 flex items-end gap-2">
                     <span className="font-semibold">
                       ${product.price.toFixed(2)}
                     </span>
-                    {/* {product.comparePrice && (
-                      <span className="text-muted-foreground text-sm line-through">
-                        ${product.comparePrice.toFixed(2)}
-                      </span>
-                    )} */}
                   </div>
                 </CardContent>
 
@@ -374,27 +320,15 @@ export default async function CategoryPage({
               </Card>
             ))}
           </div>
-
-          {/* Pagination (15 Items each page) */}
-          {products.length > 0 && (
-            <div className="mt-12 flex justify-center">
-              <div className="flex gap-1">
-                <Button variant="outline" size="icon" disabled>
-                  <ChevronRight className="h-4 w-4 rotate-180" />
-                </Button>
-                {Array.from(
-                  { length: Math.ceil(products.length / 15) },
-                  (_, i) => (
-                    <Button key={i} variant="outline" size="sm">
-                      {i + 1}
-                    </Button>
-                  ),
-                )}
-                <Button variant="outline" size="icon">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          {/* Pagination */}
+          {totalItems > itemsPerPage && (
+            <PaginationControl
+              currentPage={currentPage}
+              totalPages={totalPages}
+              type={type}
+              category={category}
+              sortOption={sortOption}
+            />
           )}
         </div>
       </div>
