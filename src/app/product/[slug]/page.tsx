@@ -4,15 +4,15 @@ import { getProductBySlug } from "@/lib/services/product-service";
 import { ProductDetail } from "@/components/products/product-detail";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+  const product = await getProductBySlug((await params).slug);
 
   if (!product) {
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug);
+  const product = await getProductBySlug((await params).slug);
 
   if (!product) {
     notFound();

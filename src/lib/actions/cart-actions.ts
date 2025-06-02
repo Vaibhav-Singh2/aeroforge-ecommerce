@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
 export async function getUserCartItems() {
-  const { userId: clerkUserId } = auth();
+  const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     return [];
@@ -37,7 +37,7 @@ export async function addToCart(
   quantity: number,
   variantId?: string,
 ) {
-  const { userId: clerkUserId } = auth();
+  const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     throw new Error("User not authenticated");
@@ -105,7 +105,7 @@ export async function addToCart(
 }
 
 export async function updateCartItemQuantity(itemId: string, quantity: number) {
-  const { userId: clerkUserId } = auth();
+  const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     throw new Error("User not authenticated");
@@ -149,7 +149,7 @@ export async function updateCartItemQuantity(itemId: string, quantity: number) {
 }
 
 export async function removeCartItem(itemId: string) {
-  const { userId: clerkUserId } = auth();
+  const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     throw new Error("User not authenticated");
@@ -185,7 +185,7 @@ export async function removeCartItem(itemId: string) {
 }
 
 export async function clearCart() {
-  const { userId: clerkUserId } = auth();
+  const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     throw new Error("User not authenticated");

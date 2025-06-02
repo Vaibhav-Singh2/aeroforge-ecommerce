@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 export default async function OrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   try {
-    const order = await getOrderById({ orderId: params.id });
+    const order = await getOrderById({ orderId: (await params).id });
 
     return <OrderDetail order={order} />;
   } catch (error) {

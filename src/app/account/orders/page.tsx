@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "View your order history and track your purchases",
 };
 
+// This page uses dynamic data, so we need to opt out of static rendering
+export const dynamic = "force-dynamic";
+
 export default async function OrderHistoryPage() {
   const orders = await getUserOrders();
 
