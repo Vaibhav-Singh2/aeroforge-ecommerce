@@ -52,7 +52,7 @@ export function SiteHeader() {
             <span className="hidden text-xl font-bold md:inline-block">
               {"Anubhav Projects's Lab"}
             </span>
-            <span className="text-xl font-bold md:hidden">DS</span>
+            <span className="text-xl font-bold md:hidden">{"AP Lab"}</span>
           </Link>
           <MainNav />
         </div>
