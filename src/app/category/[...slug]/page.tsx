@@ -64,10 +64,28 @@ export default async function CategoryPage({
         },
       },
     },
+    take: 15,
     orderBy: {
       createdAt: "desc",
     },
   });
+
+  const totalProducts = categoryList.reduce((acc, cat) => {
+    return acc + (cat._count.products || 0);
+  }, 0);
+
+  const productsCount = await prisma.product.count({
+    where: {
+      category: {
+        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
+        slug: category || undefined,
+      },
+    },
+  });
+
+  console.log(`Category: ${category}, Type: ${type}`);
+  console.log(`Total Products: ${totalProducts}`);
+  console.log(`Products Count: ${productsCount}`);
 
   return (
     <div className="container px-5 py-8">
@@ -149,7 +167,7 @@ export default async function CategoryPage({
                         : "text-muted-foreground"
                     }`}
                   >
-                    {cat.name}
+                    {cat.name} {` (${cat._count.products})`}
                   </Link>
                 ))}
               </div>
@@ -169,7 +187,7 @@ export default async function CategoryPage({
                   {categoryList.map((cat) => (
                     <Link key={cat.id} href={`/category/${type}/${cat.slug}`}>
                       <SelectItem key={cat.id} value={cat.slug}>
-                        {cat.name}
+                        {cat.name} ({cat._count.products})
                       </SelectItem>
                     </Link>
                   ))}
@@ -357,29 +375,27 @@ export default async function CategoryPage({
             ))}
           </div>
 
-          {/* Pagination */}
-          <div className="mt-12 flex justify-center">
-            <div className="flex gap-1">
-              <Button variant="outline" size="icon" disabled>
-                <ChevronRight className="h-4 w-4 rotate-180" />
-              </Button>
-              <Button variant="outline" size="sm">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                3
-              </Button>
-              <Button variant="outline" size="sm">
-                4
-              </Button>
-              <Button variant="outline" size="icon">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+          {/* Pagination (15 Items each page) */}
+          {products.length > 0 && (
+            <div className="mt-12 flex justify-center">
+              <div className="flex gap-1">
+                <Button variant="outline" size="icon" disabled>
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                </Button>
+                {Array.from(
+                  { length: Math.ceil(products.length / 15) },
+                  (_, i) => (
+                    <Button key={i} variant="outline" size="sm">
+                      {i + 1}
+                    </Button>
+                  ),
+                )}
+                <Button variant="outline" size="icon">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
