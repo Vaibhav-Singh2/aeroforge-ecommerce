@@ -1,24 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Menu, Search, X } from "lucide-react";
+import { Menu, Search, X, ShoppingCart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { MainNav } from "@/components/layouts/main-nav";
 import { MobileNav } from "@/components/layouts/mobile-nav";
-// import { useCartStore } from "@/lib/stores/cart-store"
 import { ThemeToggle } from "../themeToggle";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  closeSearch,
+  openSearch,
+  closeMobileMenu,
+  openMobileMenu,
+} from "@/lib/redux/features/uiSlice";
 
 export function SiteHeader() {
+  const dispatch = useAppDispatch();
+  const { isSearchOpen, isMobileMenuOpen } = useAppSelector(
+    (state) => state.ui,
+  );
+  const { items } = useAppSelector((state) => state.cart);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const pathname = usePathname();
-  // const { items } = useCartStore()
 
   // Update scroll state
   useEffect(() => {
@@ -32,10 +41,15 @@ export function SiteHeader() {
 
   // Close mobile menu on navigation
   useEffect(() => {
-    setShowMobileMenu(false);
-  }, [pathname]);
+    if (isMobileMenuOpen) {
+      dispatch(closeMobileMenu());
+    }
+  }, [pathname, dispatch, isMobileMenuOpen]);
 
-  // const cartItemsCount = items.reduce((total, item) => total + item.quantity, 0)
+  const cartItemsCount = items.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
 
   return (
     <header
@@ -63,7 +77,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSearchOpen(true)}
+                onClick={() => dispatch(openSearch())}
                 className="hover:bg-muted transition-all duration-200"
               >
                 <Search className="h-5 w-5" />
@@ -72,20 +86,20 @@ export function SiteHeader() {
 
               <ThemeToggle />
 
-              {/* <Link href="/cart">
+              <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
                   {cartItemsCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
                     >
                       {cartItemsCount}
                     </Badge>
                   )}
                   <span className="sr-only">Cart</span>
                 </Button>
-              </Link> */}
+              </Link>
 
               <UserButton afterSignOutUrl="/" />
 
@@ -93,7 +107,7 @@ export function SiteHeader() {
                 variant="ghost"
                 size="icon"
                 className="lg:hidden"
-                onClick={() => setShowMobileMenu(true)}
+                onClick={() => dispatch(openMobileMenu())}
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Menu</span>
@@ -109,7 +123,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSearchOpen(false)}
+                onClick={() => dispatch(closeSearch())}
                 className="ml-1"
               >
                 <X className="h-5 w-5" />
@@ -120,7 +134,9 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {showMobileMenu && <MobileNav onClose={() => setShowMobileMenu(false)} />}
+      {isMobileMenuOpen && (
+        <MobileNav onClose={() => dispatch(closeMobileMenu())} />
+      )}
     </header>
   );
 }
