@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { checkUser } from "./check-user";
 
 export async function getUserCartItems() {
   const { userId: clerkUserId } = await auth();
@@ -11,9 +12,8 @@ export async function getUserCartItems() {
     return [];
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId },
-  });
+  // Use checkUser which will create user if not found
+  const user = await checkUser();
 
   if (!user) {
     return [];
@@ -43,9 +43,8 @@ export async function addToCart(
     throw new Error("User not authenticated");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId },
-  });
+  // Use checkUser which will create user if not found
+  const user = await checkUser();
 
   if (!user) {
     throw new Error("User not found");
@@ -111,9 +110,8 @@ export async function updateCartItemQuantity(itemId: string, quantity: number) {
     throw new Error("User not authenticated");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId },
-  });
+  // Use checkUser which will create user if not found
+  const user = await checkUser();
 
   if (!user) {
     throw new Error("User not found");
@@ -155,9 +153,8 @@ export async function removeCartItem(itemId: string) {
     throw new Error("User not authenticated");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId },
-  });
+  // Use checkUser which will create user if not found
+  const user = await checkUser();
 
   if (!user) {
     throw new Error("User not found");
@@ -191,9 +188,8 @@ export async function clearCart() {
     throw new Error("User not authenticated");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkUserId },
-  });
+  // Use checkUser which will create user if not found
+  const user = await checkUser();
 
   if (!user) {
     throw new Error("User not found");

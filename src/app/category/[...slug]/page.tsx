@@ -1,12 +1,10 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ShoppingCart,
-  Heart,
-  SlidersHorizontal,
-  ChevronRight,
-} from "lucide-react";
+import { Heart, SlidersHorizontal, ChevronRight } from "lucide-react";
+
+// Import the client component
+import { ClientAddToCartButton } from "@/components/ui/category-add-to-cart";
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -24,6 +22,7 @@ import { SortDropdown } from "@/components/ui/sort-dropdown";
 import { PaginationControl } from "@/components/ui/pagination-control";
 import prisma from "@/lib/prisma";
 
+// Server component
 export default async function CategoryPage({
   params,
   searchParams,
@@ -294,7 +293,6 @@ export default async function CategoryPage({
                     </Button>
                   </div>
                 </div>
-
                 <CardContent className="pt-6">
                   <div className="mb-1 flex items-center gap-1">
                     <span className="text-muted-foreground text-xs">
@@ -312,13 +310,9 @@ export default async function CategoryPage({
                       ${product.price.toFixed(2)}
                     </span>
                   </div>
-                </CardContent>
-
+                </CardContent>{" "}
                 <CardFooter className="pt-0">
-                  <Button size="sm" className="w-full gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Add to Cart
-                  </Button>
+                  <ClientAddToCartButton product={product} />
                 </CardFooter>
               </Card>
             ))}
