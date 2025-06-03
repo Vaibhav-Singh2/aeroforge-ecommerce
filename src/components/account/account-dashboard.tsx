@@ -137,7 +137,7 @@ export function AccountDashboard() {
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline" size="sm">
-              <Link href="/category/all">Browse Products</Link>
+              <Link href="/category/projects">Browse Products</Link>
             </Button>
           </CardFooter>
         </Card>

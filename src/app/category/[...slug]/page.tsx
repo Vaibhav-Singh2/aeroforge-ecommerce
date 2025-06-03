@@ -301,7 +301,10 @@ export default async function CategoryPage({
                       {product.category.name}
                     </span>
                   </div>
-                  <Link href={product.slug} className="hover:underline">
+                  <Link
+                    href={`/product/${product.slug}`}
+                    className="hover:underline"
+                  >
                     <h3 className="line-clamp-1 font-medium">{product.name}</h3>
                   </Link>
                   <div className="mt-2 flex items-end gap-2">

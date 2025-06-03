@@ -136,7 +136,7 @@ export function CartPage() {
               {`Looks like you haven't added anything to your cart yet.`}
             </p>
             <Button asChild>
-              <Link href="/category/all">Continue Shopping</Link>
+              <Link href="/category/projects">Continue Shopping</Link>
             </Button>
           </div>
         </div>
@@ -234,7 +234,10 @@ export function CartPage() {
             {/* Back to shopping */}
             <div>
               <Button variant="outline" asChild>
-                <Link href="/category/all" className="flex items-center gap-2">
+                <Link
+                  href="/category/projects"
+                  className="flex items-center gap-2"
+                >
                   <ArrowRight className="h-4 w-4 rotate-180" />
                   Continue Shopping
                 </Link>

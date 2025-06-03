@@ -24,7 +24,7 @@ export async function FeaturedProducts() {
             Explore our collection of high-quality drones and accessories
           </p>
         </div>
-        <Link href="/category/all">
+        <Link href="/category/projects">
           <Button variant="link" className="group gap-1">
             View all products
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

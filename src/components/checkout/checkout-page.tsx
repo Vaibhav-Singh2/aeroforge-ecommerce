@@ -3,12 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ShoppingBag,
-  ChevronLeft,
-  CreditCard,
-  Check,
-} from "lucide-react";
+import { ShoppingBag, ChevronLeft, CreditCard, Check } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { clearCart } from "@/lib/redux/features/cartSlice";
@@ -226,7 +221,7 @@ export function CheckoutPage() {
               You need to add items to your cart before checkout.
             </p>
             <Button asChild>
-              <Link href="/category/all">Browse Products</Link>
+              <Link href="/category/projects">Browse Products</Link>
             </Button>
           </div>
         </div>

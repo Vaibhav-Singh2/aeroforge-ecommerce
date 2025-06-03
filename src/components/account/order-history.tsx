@@ -124,7 +124,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
               orders here.`}
             </p>
             <Button asChild>
-              <Link href="/category/all">Browse Products</Link>
+              <Link href="/category/projects">Browse Products</Link>
             </Button>
           </CardContent>
         </Card>
