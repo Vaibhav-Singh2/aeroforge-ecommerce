@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { SiteHeader } from "@/components/layouts/site-header";
 import { SiteFooter } from "@/components/layouts/site-footer";
-import { ThemeProvider } from "@/components/themeProvider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/lib/redux/provider";
+import { ClerkThemeProvider } from "@/components/providers/clerk-theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,28 +29,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <ReduxProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+          <ClerkThemeProvider>
+            <ReduxProvider>
               <div className="relative flex min-h-screen flex-col">
                 <SiteHeader />
                 <main className="flex-1">{children}</main>
                 <SiteFooter />
               </div>
-              <Toaster />
-            </ThemeProvider>
-          </ReduxProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+            </ReduxProvider>
+            <Toaster />
+          </ClerkThemeProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

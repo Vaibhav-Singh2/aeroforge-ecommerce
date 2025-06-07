@@ -13,9 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import LoadingScreen from "../loading-screen";
 
 export function AccountDashboard() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) return <LoadingScreen />;
 
   if (!user) {
     return (
@@ -41,7 +44,7 @@ export function AccountDashboard() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="container mx-auto max-w-4xl py-10">
       <h1 className="mb-8 text-3xl font-bold">My Account</h1>
 
       {/* User profile summary */}

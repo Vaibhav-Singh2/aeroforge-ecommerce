@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const navItems: Array<{ title: string; href: string }> = [
   {
     title: "Home",
     href: "/",
@@ -24,6 +24,10 @@ const navItems = [
   {
     title: "3D Printing Services",
     href: "/services/3d-printing",
+  },
+  {
+    title: "Account",
+    href: "/account",
   },
 ];
 

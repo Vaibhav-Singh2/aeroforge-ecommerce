@@ -44,7 +44,9 @@ export function SiteHeader() {
     if (isMobileMenuOpen) {
       dispatch(closeMobileMenu());
     }
-  }, [pathname, dispatch, isMobileMenuOpen]);
+    // ignore missing dependency warning
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, dispatch]);
 
   const cartItemsCount = items.reduce(
     (total, item) => total + item.quantity,

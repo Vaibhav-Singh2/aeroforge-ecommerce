@@ -11,13 +11,21 @@ export const makeStore = () => {
       user: userReducer,
       product: productReducer,
       ui: uiReducer,
-    },
-    // Adding middleware to handle serialization issues with MongoDB ObjectId
+    }, // Adding middleware to handle serialization issues with MongoDB ObjectId and Date objects
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          ignoredActions: ["user/setAddresses", "product/fetchProductSuccess"],
-          ignoredPaths: ["user.addresses", "product.currentProduct"],
+          ignoredActions: [
+            "user/setAddresses",
+            "product/fetchProductSuccess",
+            "user/setUser",
+          ],
+          ignoredPaths: [
+            "user.addresses",
+            "product.currentProduct",
+            "user.user.createdAt",
+            "user.user.updatedAt",
+          ],
         },
       }),
   });

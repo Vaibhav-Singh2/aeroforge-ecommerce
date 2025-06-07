@@ -108,7 +108,7 @@ export function AddressBook() {
   // Render empty state if no addresses
   if (addresses.length === 0) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="container mx-auto max-w-4xl py-10">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="mb-1 text-3xl font-bold">Address Book</h1>

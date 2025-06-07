@@ -113,7 +113,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   // Render empty state if no orders
   if (orders.length === 0) {
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="container mx-auto max-w-4xl py-10">
         <h1 className="mb-6 text-3xl font-bold">Your Orders</h1>
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center pt-6 pb-16 text-center">
