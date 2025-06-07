@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Order as PrismaOrder, OrderStatus, OrderItem } from "@prisma/client";
-import { Package, ChevronRight, Search } from "lucide-react";
+import { Package, ChevronRight, Search, ArrowLeft } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { cancelOrder } from "@/lib/actions/order-actions";
@@ -76,6 +76,11 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
+  // Handle navigating back
+  const handleBack = () => {
+    router.back();
+  };
+
   // Handle cancelling an order
   const handleCancelOrder = async (orderId: string) => {
     if (window.confirm("Are you sure you want to cancel this order?")) {
@@ -114,7 +119,18 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   if (orders.length === 0) {
     return (
       <div className="container mx-auto max-w-4xl py-10">
-        <h1 className="mb-6 text-3xl font-bold">Your Orders</h1>
+        <div className="mb-6 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="h-8 w-8"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">Your Orders</h1>
+        </div>
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center pt-6 pb-16 text-center">
             <Package className="text-muted-foreground mb-4 h-16 w-16" />
@@ -135,7 +151,18 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   return (
     <div className="container max-w-4xl py-10">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <h1 className="text-3xl font-bold">Your Orders</h1>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="h-8 w-8"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">Your Orders</h1>
+        </div>
         <div className="relative w-full max-w-xs">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input

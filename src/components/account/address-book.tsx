@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Edit, Trash, Check } from "lucide-react";
+import { MapPin, Plus, Edit, Trash, Check, ArrowLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { Address } from "@prisma/client";
@@ -33,6 +33,11 @@ export function AddressBook() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Handle navigating back
+  const handleBack = () => {
+    router.back();
+  };
 
   // Handle edit address
   const handleEditAddress = (address: Address) => {
@@ -110,11 +115,22 @@ export function AddressBook() {
     return (
       <div className="container mx-auto max-w-4xl py-10">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-            <p className="text-muted-foreground">
-              Manage your shipping and billing addresses
-            </p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="h-8 w-8"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
+              <p className="text-muted-foreground">
+                Manage your shipping and billing addresses
+              </p>
+            </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -178,11 +194,22 @@ export function AddressBook() {
   return (
     <div className="container max-w-4xl py-10">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-          <p className="text-muted-foreground">
-            Manage your shipping and billing addresses
-          </p>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="h-8 w-8"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
+            <p className="text-muted-foreground">
+              Manage your shipping and billing addresses
+            </p>
+          </div>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -371,6 +398,14 @@ export function AddressBook() {
           )}
         </CardContent>
       </Card>
+
+      {/* Back button */}
+      <div className="mt-8">
+        <Button variant="outline" onClick={handleBack} className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
     </div>
   );
 }

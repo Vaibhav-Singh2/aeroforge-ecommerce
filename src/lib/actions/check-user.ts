@@ -11,18 +11,16 @@ export const checkUser = async (): Promise<User | null | undefined> => {
   }
 
   try {
-    const loggedInUser = await prisma.user.findUnique({
-      where: { clerkUserId: user.id },
-    });
-
-    if (loggedInUser) {
-      return loggedInUser;
-    }
-
     const name = `${user.firstName} ${user.lastName}`;
 
-    const newUser = await prisma.user.create({
-      data: {
+    const upsertedUser = await prisma.user.upsert({
+      where: { clerkUserId: user.id },
+      update: {
+        name,
+        imageUrl: user.imageUrl,
+        email: user.emailAddresses[0].emailAddress,
+      },
+      create: {
         clerkUserId: user.id,
         name,
         imageUrl: user.imageUrl,
@@ -30,7 +28,7 @@ export const checkUser = async (): Promise<User | null | undefined> => {
       },
     });
 
-    return newUser;
+    return upsertedUser;
   } catch (error) {
     if (error instanceof Error) console.log(error.message);
     else console.log(error);
