@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 // This would normally come from your API
 type PrintOrder = {
@@ -394,10 +395,12 @@ export default function PrintOrderDetailPage({
                           key={index}
                           className="relative aspect-square overflow-hidden rounded-md"
                         >
-                          <img
+                          <Image
                             src={image}
                             alt={`Print image ${index + 1}`}
                             className="h-full w-full object-cover"
+                            width={500}
+                            height={500}
                           />
                         </div>
                       ))}
