@@ -11,12 +11,10 @@ import { addToast } from "@/lib/redux/features/uiSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Address } from "@prisma/client";
 
 const addressSchema = z.object({
-  type: z.enum(["shipping", "billing"]),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   company: z.string().optional(),
@@ -50,7 +48,6 @@ export function AddressForm({
     defaultValues:
       address && address !== null
         ? {
-            type: address.type as "shipping" | "billing",
             firstName: address.firstName,
             lastName: address.lastName,
             company: address.company || "",
@@ -64,7 +61,6 @@ export function AddressForm({
             isDefault: address.isDefault,
           }
         : {
-            type: "shipping",
             firstName: "",
             lastName: "",
             company: "",
@@ -93,7 +89,6 @@ export function AddressForm({
       else {
         const formData = new FormData(e.currentTarget);
         const addressData = {
-          type: formData.get("type") as "shipping" | "billing",
           firstName: formData.get("firstName") as string,
           lastName: formData.get("lastName") as string,
           company: (formData.get("company") as string) || undefined,
@@ -150,24 +145,6 @@ export function AddressForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Address Type</Label>
-        <RadioGroup
-          name="type"
-          defaultValue={form.getValues("type")}
-          className="flex gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="shipping" id="shipping" />
-            <Label htmlFor="shipping">Shipping</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="billing" id="billing" />
-            <Label htmlFor="billing">Billing</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="firstName">First Name</Label>

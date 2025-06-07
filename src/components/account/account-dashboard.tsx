@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { Package, User, MapPin, ShoppingBag } from "lucide-react";
+import {
+  Package,
+  User,
+  MapPin,
+  ShoppingBag,
+  Wrench,
+  Printer,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -46,7 +53,6 @@ export function AccountDashboard() {
   return (
     <div className="container mx-auto max-w-4xl py-10">
       <h1 className="mb-8 text-3xl font-bold">My Account</h1>
-
       {/* User profile summary */}
       <Card className="mb-8">
         <CardHeader>
@@ -69,8 +75,7 @@ export function AccountDashboard() {
             </div>
           </div>
         </CardContent>
-      </Card>
-
+      </Card>{" "}
       {/* Quick links */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -87,6 +92,44 @@ export function AccountDashboard() {
           <CardFooter>
             <Button asChild variant="outline" size="sm">
               <Link href="/account/orders">View Order History</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Repair Orders</CardTitle>
+            <CardDescription>
+              Track your repair service requests
+            </CardDescription>
+          </CardHeader>{" "}
+          <CardContent className="text-muted-foreground text-sm">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              <span>Check the status of your repair orders</span>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/account/repair-orders">View Repair Orders</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">3D Print Orders</CardTitle>
+            <CardDescription>Track your 3D printing requests</CardDescription>
+          </CardHeader>{" "}
+          <CardContent className="text-muted-foreground text-sm">
+            <div className="flex items-center gap-2">
+              <Printer className="h-4 w-4" />
+              <span>Check the status of your 3D print jobs</span>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/account/print-orders">View Print Orders</Link>
             </Button>
           </CardFooter>
         </Card>

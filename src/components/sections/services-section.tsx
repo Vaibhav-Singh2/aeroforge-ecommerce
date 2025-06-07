@@ -9,15 +9,15 @@ import { Card, CardContent } from "@/components/ui/card";
 export function ServicesSection() {
   return (
     <section className="container py-12">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold mb-4">Professional Services</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+      <div className="mb-12 text-center">
+        <h2 className="mb-4 text-3xl font-bold">Professional Services</h2>
+        <p className="text-muted-foreground mx-auto max-w-2xl">
           We offer expert repair services and custom 3D printing to meet all
           your drone and RC needs
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Card className="overflow-hidden">
           <div className="overflow-hidden">
             <AspectRatio ratio={16 / 9}>
@@ -30,9 +30,9 @@ export function ServicesSection() {
             </AspectRatio>
           </div>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Wrench className="h-5 w-5 text-primary" />
+            <div className="mb-3 flex items-center gap-2">
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                <Wrench className="text-primary h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">Repair Services</h3>
             </div>
@@ -40,13 +40,13 @@ export function ServicesSection() {
               Our expert technicians can diagnose and repair your drones and RC
               planes, getting you back in the air quickly.
             </p>
-            <ul className="space-y-2 mb-6">
+            <ul className="mb-6 space-y-2">
               <li className="flex items-start gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -61,7 +61,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -76,7 +76,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -91,7 +91,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -122,9 +122,9 @@ export function ServicesSection() {
             </AspectRatio>
           </div>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Printer className="h-5 w-5 text-primary" />
+            <div className="mb-3 flex items-center gap-2">
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                <Printer className="text-primary h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">3D Printing Services</h3>
             </div>
@@ -132,13 +132,13 @@ export function ServicesSection() {
               We offer custom 3D printing services for drone parts, accessories,
               and modifications tailored to your needs.
             </p>
-            <ul className="space-y-2 mb-6">
+            <ul className="mb-6 space-y-2">
               <li className="flex items-start gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -153,7 +153,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -168,7 +168,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -183,7 +183,7 @@ export function ServicesSection() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 h-5 text-primary mt-0.5"
+                  className="text-primary mt-0.5 h-5 w-5"
                 >
                   <path
                     fillRule="evenodd"
@@ -195,7 +195,7 @@ export function ServicesSection() {
               </li>
             </ul>
             <Button asChild className="gap-1">
-              <Link href="/services/printing">
+              <Link href="/services/3d-printing">
                 Learn More <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

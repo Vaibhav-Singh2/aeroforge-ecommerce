@@ -25,11 +25,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AddressForm } from "@/components/user/address-form";
+import LoadingScreen from "../loading-screen";
 
 export function AddressBook() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { addresses } = useAppSelector((state) => state.user);
+  const { addresses, addressLoading } = useAppSelector((state) => state.user);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,18 +76,15 @@ export function AddressBook() {
   };
 
   // Handle set default address
-  const handleSetDefaultAddress = async (
-    addressId: string,
-    type: "shipping" | "billing",
-  ) => {
+  const handleSetDefaultAddress = async (addressId: string) => {
     setIsLoading(true);
     try {
-      await setDefaultAddress(addressId, type);
+      await setDefaultAddress(addressId);
       dispatch(
         addToast({
           type: "success",
           title: "Default address updated",
-          message: `Your default ${type} address has been updated.`,
+          message: "Your default address has been updated.",
         }),
       );
       router.refresh();
@@ -104,11 +102,41 @@ export function AddressBook() {
     }
   };
 
-  // Group addresses by type
-  const shippingAddresses = addresses.filter(
-    (addr) => addr.type === "shipping",
-  );
-  const billingAddresses = addresses.filter((addr) => addr.type === "billing");
+  if (addressLoading) {
+    return (
+      <div className="container mx-auto max-w-4xl py-10">
+        <div className="flex flex-col justify-between gap-4 pb-4 md:flex-row md:items-center">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="h-8 w-8"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
+              <p className="text-muted-foreground">Manage your addresses</p>
+            </div>
+          </div>
+        </div>
+
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4">
+              <LoadingScreen />
+            </div>
+            <h2 className="mb-2 text-xl font-semibold">Loading addresses...</h2>
+            <p className="text-muted-foreground mb-6 max-w-sm">
+              Please wait while we fetch your saved addresses.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Render empty state if no addresses
   if (addresses.length === 0) {
@@ -127,9 +155,7 @@ export function AddressBook() {
             </Button>
             <div>
               <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-              <p className="text-muted-foreground">
-                Manage your shipping and billing addresses
-              </p>
+              <p className="text-muted-foreground">Manage your addresses</p>
             </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -143,7 +169,7 @@ export function AddressBook() {
               <DialogHeader>
                 <DialogTitle>Add New Address</DialogTitle>
                 <DialogDescription>
-                  Add a new shipping or billing address to your account.
+                  Add a new address to your account.
                 </DialogDescription>
               </DialogHeader>
               <AddressForm
@@ -174,7 +200,7 @@ export function AddressBook() {
                 <DialogHeader>
                   <DialogTitle>Add New Address</DialogTitle>
                   <DialogDescription>
-                    Add a new shipping or billing address to your account.
+                    Add a new address to your account.
                   </DialogDescription>
                 </DialogHeader>
                 <AddressForm
@@ -192,7 +218,7 @@ export function AddressBook() {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="container mx-auto max-w-4xl px-5 py-10">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
           <Button
@@ -206,9 +232,7 @@ export function AddressBook() {
           </Button>
           <div>
             <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-            <p className="text-muted-foreground">
-              Manage your shipping and billing addresses
-            </p>
+            <p className="text-muted-foreground">Manage your addresses</p>
           </div>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -226,7 +250,7 @@ export function AddressBook() {
               <DialogDescription>
                 {editingAddress
                   ? "Update your existing address information."
-                  : "Add a new shipping or billing address to your account."}
+                  : "Add a new address to your account."}
               </DialogDescription>
             </DialogHeader>
             <AddressForm
@@ -241,161 +265,72 @@ export function AddressBook() {
         </Dialog>
       </div>
 
-      {/* Shipping addresses */}
+      {/* All addresses */}
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Shipping Addresses</CardTitle>
+          <CardTitle>Your Addresses</CardTitle>
           <CardDescription>
-            Addresses used for delivering your orders.
+            Addresses used for delivering orders and billing.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
-          {shippingAddresses.length === 0 ? (
-            <p className="text-muted-foreground text-sm md:col-span-2">
-              No shipping addresses added yet.
-            </p>
-          ) : (
-            shippingAddresses.map((address) => (
-              <Card key={address.id} className="relative">
-                <CardContent className="pt-6">
-                  {address.isDefault && (
-                    <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                  <div className="space-y-1">
-                    <h3 className="font-medium">
-                      {address.firstName} {address.lastName}
-                    </h3>
-                    <p className="text-sm">{address.address1}</p>
-                    {address.address2 && (
-                      <p className="text-sm">{address.address2}</p>
-                    )}
-                    <p className="text-sm">
-                      {address.city}, {address.state} {address.zipCode}
-                    </p>
-                    <p className="text-sm">{address.country}</p>
-                    {address.phone && (
-                      <p className="text-sm">{address.phone}</p>
-                    )}
+          {addresses.map((address) => (
+            <Card key={address.id} className="relative">
+              <CardContent className="pt-6">
+                {address.isDefault && (
+                  <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full p-1">
+                    <Check className="h-3 w-3" />
                   </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => handleEditAddress(address)}
-                    >
-                      <Edit className="mr-1 h-3.5 w-3.5" />
-                      Edit
-                    </Button>
+                )}
+                <div className="space-y-1">
+                  <h3 className="font-medium">
+                    {address.firstName} {address.lastName}
+                  </h3>
+                  <p className="text-sm">{address.address1}</p>
+                  {address.address2 && (
+                    <p className="text-sm">{address.address2}</p>
+                  )}
+                  <p className="text-sm">
+                    {address.city}, {address.state} {address.zipCode}
+                  </p>
+                  <p className="text-sm">{address.country}</p>
+                  {address.phone && <p className="text-sm">{address.phone}</p>}
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => handleEditAddress(address)}
+                  >
+                    <Edit className="mr-1 h-3.5 w-3.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive h-8"
+                    onClick={() => handleDeleteAddress(address.id)}
+                    disabled={isLoading}
+                  >
+                    <Trash className="mr-1 h-3.5 w-3.5" />
+                    Delete
+                  </Button>
+                  {!address.isDefault && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive h-8"
-                      onClick={() => handleDeleteAddress(address.id)}
+                      className="ml-auto h-8"
+                      onClick={() => handleSetDefaultAddress(address.id)}
                       disabled={isLoading}
                     >
-                      <Trash className="mr-1 h-3.5 w-3.5" />
-                      Delete
+                      Set as Default
                     </Button>
-                    {!address.isDefault && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-auto h-8"
-                        onClick={() =>
-                          handleSetDefaultAddress(address.id, "shipping")
-                        }
-                        disabled={isLoading}
-                      >
-                        Set as Default
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Billing addresses */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing Addresses</CardTitle>
-          <CardDescription>
-            Addresses used for payment and invoicing.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2">
-          {billingAddresses.length === 0 ? (
-            <p className="text-muted-foreground text-sm md:col-span-2">
-              No billing addresses added yet.
-            </p>
-          ) : (
-            billingAddresses.map((address) => (
-              <Card key={address.id} className="relative">
-                <CardContent className="pt-6">
-                  {address.isDefault && (
-                    <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
                   )}
-                  <div className="space-y-1">
-                    <h3 className="font-medium">
-                      {address.firstName} {address.lastName}
-                    </h3>
-                    <p className="text-sm">{address.address1}</p>
-                    {address.address2 && (
-                      <p className="text-sm">{address.address2}</p>
-                    )}
-                    <p className="text-sm">
-                      {address.city}, {address.state} {address.zipCode}
-                    </p>
-                    <p className="text-sm">{address.country}</p>
-                    {address.phone && (
-                      <p className="text-sm">{address.phone}</p>
-                    )}
-                  </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => handleEditAddress(address)}
-                    >
-                      <Edit className="mr-1 h-3.5 w-3.5" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive h-8"
-                      onClick={() => handleDeleteAddress(address.id)}
-                      disabled={isLoading}
-                    >
-                      <Trash className="mr-1 h-3.5 w-3.5" />
-                      Delete
-                    </Button>
-                    {!address.isDefault && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-auto h-8"
-                        onClick={() =>
-                          handleSetDefaultAddress(address.id, "billing")
-                        }
-                        disabled={isLoading}
-                      >
-                        Set as Default
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </CardContent>
       </Card>
 

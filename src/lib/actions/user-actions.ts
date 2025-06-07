@@ -6,7 +6,6 @@ import { auth } from "@clerk/nextjs/server";
 
 // Type for address input
 export type AddressInput = {
-  type: "shipping" | "billing";
   firstName: string;
   lastName: string;
   company?: string;
@@ -80,7 +79,6 @@ export async function addAddress(data: AddressInput) {
       await prisma.address.updateMany({
         where: {
           userId: user.id,
-          type: data.type,
           isDefault: true,
         },
         data: {
@@ -144,7 +142,6 @@ export async function updateAddress(addressId: string, data: AddressInput) {
       await prisma.address.updateMany({
         where: {
           userId: user.id,
-          type: data.type,
           isDefault: true,
           id: { not: addressId },
         },
@@ -224,10 +221,7 @@ export async function deleteAddress(addressId: string) {
 /**
  * Set an address as default for a specific type (shipping or billing)
  */
-export async function setDefaultAddress(
-  addressId: string,
-  type: "shipping" | "billing",
-) {
+export async function setDefaultAddress(addressId: string) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -262,7 +256,6 @@ export async function setDefaultAddress(
       prisma.address.updateMany({
         where: {
           userId: user.id,
-          type,
           isDefault: true,
         },
         data: {
@@ -276,8 +269,6 @@ export async function setDefaultAddress(
         },
         data: {
           isDefault: true,
-          // Ensure the address is of the correct type
-          type,
         },
       }),
     ]);

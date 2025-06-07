@@ -4,6 +4,7 @@ import type { User, Address } from "@prisma/client";
 interface UserState {
   user: User | null;
   addresses: Address[];
+  addressLoading: boolean;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -12,6 +13,7 @@ interface UserState {
 const initialState: UserState = {
   user: null,
   addresses: [],
+  addressLoading: true,
   loading: false,
   error: null,
   isAuthenticated: false,
@@ -29,6 +31,7 @@ export const userSlice = createSlice({
     },
     setAddresses: (state, action: PayloadAction<Address[]>) => {
       state.addresses = action.payload;
+      state.addressLoading = false;
     },
     addAddress: (state, action: PayloadAction<Address>) => {
       state.addresses.push(action.payload);

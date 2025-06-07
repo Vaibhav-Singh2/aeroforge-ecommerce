@@ -212,7 +212,7 @@ export function CheckoutPage() {
   // If cart is empty, redirect to cart page
   if (cartItems.length === 0 && activeStep !== STEPS.CONFIRMATION) {
     return (
-      <div className="container py-10">
+      <div className="container px-5 py-10">
         <div className="flex flex-col items-center justify-center space-y-6 py-16">
           <ShoppingBag className="text-muted-foreground h-16 w-16" />
           <div className="text-center">
@@ -232,7 +232,7 @@ export function CheckoutPage() {
   // Render confirmation step
   if (activeStep === STEPS.CONFIRMATION) {
     return (
-      <div className="container max-w-4xl py-16">
+      <div className="container max-w-4xl px-5 py-16">
         <Card>
           <CardContent className="flex flex-col items-center pt-6 pb-16">
             <div className="mb-4 rounded-full bg-green-100 p-3">
@@ -260,7 +260,7 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container px-5 py-10">
       <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
