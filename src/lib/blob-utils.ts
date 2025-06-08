@@ -1,4 +1,4 @@
-import { put, list, del } from "@vercel/blob";
+import { put, list, del, ListBlobResult } from "@vercel/blob";
 import { nanoid } from "nanoid";
 
 /**
@@ -64,7 +64,9 @@ export async function deleteFromBlob(url: string): Promise<void> {
  * @param prefix Folder prefix to list files from
  * @returns Array of blob objects
  */
-export async function listBlobFiles(prefix: string = "uploads"): Promise<any> {
+export async function listBlobFiles(
+  prefix: string = "uploads",
+): Promise<ListBlobResult> {
   try {
     return await list({
       prefix,

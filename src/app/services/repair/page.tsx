@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Select,
@@ -314,8 +313,9 @@ export default function RepairServicesPage() {
                     <div className="mt-2 text-sm text-green-700">
                       <p>
                         Your repair request number is{" "}
-                        <span className="font-bold">{repairNumber}</span>. We'll
-                        contact you with a quote soon. Redirecting to your
+                        <span className="font-bold">{repairNumber}</span>.{" "}
+                        {`We'll
+                        contact you with a quote soon. Redirecting to your`}
                         repair orders...
                       </p>
                     </div>

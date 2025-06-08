@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
-import { Trash2, Upload, Loader2, ImageIcon } from "lucide-react";
+import { Trash2, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface VariantImageUploadProps {
@@ -44,9 +44,13 @@ export function VariantImageUpload({
         }
 
         onChange(data.url);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error uploading image:", err);
-        setError(err.message || "Error uploading image. Please try again.");
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Error uploading image. Please try again.";
+        setError(errorMessage);
       } finally {
         setIsUploading(false);
         e.target.value = "";

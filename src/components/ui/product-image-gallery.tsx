@@ -58,10 +58,9 @@ export function ProductImageGallery({
         }
 
         // Add the new URLs to the existing ones
-        onChange([...images, ...data.urls]);
-      } catch (err: any) {
+        onChange([...images, ...data.urls]);      } catch (err: Error | unknown) {
         console.error("Error uploading files:", err);
-        setError(err.message || "Error uploading files. Please try again.");
+        setError(err instanceof Error ? err.message : "Error uploading files. Please try again.");
       } finally {
         setIsUploading(false);
         // Reset the file input
@@ -79,9 +78,8 @@ export function ProductImageGallery({
     },
     [images, onChange],
   );
-
   const handleDragEnd = useCallback(
-    (result: any) => {
+    (result: import('@hello-pangea/dnd').DropResult) => {
       if (!result.destination) return;
 
       const items = Array.from(images);
