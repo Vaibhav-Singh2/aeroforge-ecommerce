@@ -8,7 +8,7 @@ import {
   Package,
   Users,
   ShoppingBag,
-  Tool,
+  WrenchIcon,
   Printer,
   Settings,
   LogOut,
@@ -21,7 +21,7 @@ const sidebarLinks = [
   { icon: Package, label: "Products", href: "/admin/products" },
   { icon: Users, label: "Customers", href: "/admin/customers" },
   { icon: ShoppingBag, label: "Orders", href: "/admin/orders" },
-  { icon: Tool, label: "Repair Orders", href: "/admin/repair-orders" },
+  { icon: WrenchIcon, label: "Repair Orders", href: "/admin/repair-orders" },
   { icon: Printer, label: "Print Orders", href: "/admin/print-orders" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];

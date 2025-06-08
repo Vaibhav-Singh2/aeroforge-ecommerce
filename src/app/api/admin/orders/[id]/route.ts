@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateAdmin } from "@/lib/admin/auth-utils";
+import { authenticateAdminRequest } from "@/lib/admin/auth-utils";
 import prisma from "@/lib/prisma";
 
 interface Params {
@@ -15,7 +15,7 @@ export async function GET(
 ): Promise<NextResponse> {
   try {
     // Authenticate the admin
-    const admin = await authenticateAdmin(request);
+    const admin = await authenticateAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -36,8 +36,7 @@ export async function GET(
           },
         },
         shippingAddress: true,
-        billingAddress: true,
-        orderItems: {
+        items: {
           include: {
             product: {
               select: {
@@ -48,10 +47,9 @@ export async function GET(
                 price: true,
               },
             },
-            productVariant: true,
+            variant: true,
           },
         },
-        payments: true,
       },
     });
 
@@ -76,13 +74,13 @@ export async function PUT(
 ): Promise<NextResponse> {
   try {
     // Authenticate the admin
-    const admin = await authenticateAdmin(request);
+    const admin = await authenticateAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = params;
-    const { status, trackingNumber, notes } = await request.json();
+    const { status, trackingNumber, adminNotes } = await request.json();
 
     // Update the order
     const order = await prisma.order.update({
@@ -90,7 +88,7 @@ export async function PUT(
       data: {
         status,
         trackingNumber,
-        notes,
+        adminNotes,
         updatedAt: new Date(),
       },
     });

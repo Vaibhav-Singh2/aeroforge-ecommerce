@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateAdmin } from "@/lib/admin/auth-utils";
+import { authenticateAdminRequest } from "@/lib/admin/auth-utils";
 import prisma from "@/lib/prisma";
 import { deleteFromBlob } from "@/lib/blob-utils";
 
@@ -7,7 +7,7 @@ import { deleteFromBlob } from "@/lib/blob-utils";
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     // Authenticate the admin
-    const admin = await authenticateAdmin(request);
+    const admin = await authenticateAdminRequest(request);
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { authenticateAdmin } from "@/lib/admin/auth-utils";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // Get credentials from request body
-    const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -18,17 +15,25 @@ export async function POST(request: NextRequest) {
     // Authenticate admin
     const result = await authenticateAdmin(email, password);
 
-    if (!result.success) {
+    if (!result.success || !result.token) {
       return NextResponse.json(
         { success: false, message: result.message },
         { status: 401 },
       );
     }
 
-    // Set admin token cookie
-    cookies().set({
-      name: "admin_token",
-      value: result.token,
+    // Create response with token cookie
+    const response = NextResponse.json({
+      success: true,
+      admin: result.admin,
+    });
+
+    if (!result.token) {
+      throw new Error("Token is required for admin login");
+    }
+
+    // Set the cookie in the response
+    response.cookies.set("admin_token", result.token, {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
@@ -36,15 +41,9 @@ export async function POST(request: NextRequest) {
       sameSite: "lax",
     });
 
-    return NextResponse.json({
-      success: true,
-      admin: result.admin,
-    });
+    return response;
   } catch (error) {
     console.error("Login error:", error);
-    return NextResponse.json(
-      { success: false, message: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to login" }, { status: 500 });
   }
 }
