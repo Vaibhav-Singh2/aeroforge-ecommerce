@@ -99,7 +99,7 @@ model ProductVariant {
   price     Float? // Override product price if different
   quantity  Int      @default(0)
   image     String?
-  options   Json // {color: "red", size: "large"}
+  // options   Json // {color: "red", size: "large"}
   createdAt DateTime @default(now())
 
   // Relations

@@ -32,6 +32,27 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      // allow all remote images from the Vercel Blob domain
+      {
+        protocol: "https",
+        hostname: "vercel.blob",
+        port: "",
+        pathname: "/**",
+      },
+      // allow all images from the Vercel Blob storage domain
+      {
+        protocol: "https",
+        hostname: "vercel.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+      },
+      // allow all images from bvchjdsex1t3pg17.public.blob.vercel-storage.com
+      {
+        protocol: "https",
+        hostname: "bvchjdsex1t3pg17.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

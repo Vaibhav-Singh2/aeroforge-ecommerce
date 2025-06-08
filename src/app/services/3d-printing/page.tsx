@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
@@ -30,28 +31,61 @@ export default function PrintingServicesPage() {
   );
   const [fileUrls, setFileUrls] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
-
-  const handleSubmitPrintRequest = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleSubmitPrintRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission functionality
-    console.log({
-      projectName,
-      description,
-      quantity,
-      material,
-      color,
-      infill,
-      layerHeight,
-      printQuality,
-      isRush,
-      needsSupports,
-      postProcessingOptions,
-      fileUrls,
-      images,
-    });
 
-    // Redirect or show success message
-    alert("3D Print request submitted! We'll contact you with a quote soon.");
+    // Check required fields
+    if (!projectName || !material) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // In a real implementation, this would be an API call to store the print request
+      // including the blob URLs in the database
+
+      console.log({
+        projectName,
+        description,
+        quantity,
+        material,
+        color,
+        infill,
+        layerHeight,
+        printQuality,
+        isRush,
+        needsSupports,
+        postProcessingOptions,
+        fileUrls,
+        images, // These are already Blob URLs stored in Vercel Blob storage
+      });
+
+      // Redirect or show success message
+      alert("3D Print request submitted! We'll contact you with a quote soon.");
+
+      // Reset the form
+      setProjectName("");
+      setDescription("");
+      setQuantity(1);
+      setMaterial("");
+      setColor("");
+      setInfill(20);
+      setLayerHeight(0.2);
+      setPrintQuality("normal");
+      setIsRush(false);
+      setNeedsSupports(false);
+      setPostProcessingOptions([]);
+      setFileUrls([]);
+      setImages([]);
+    } catch (error) {
+      console.error("Error submitting print request:", error);
+      alert("There was an error submitting your request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePostProcessingChange = (option: string) => {
@@ -185,7 +219,6 @@ export default function PrintingServicesPage() {
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label htmlFor="description" className="font-medium">
                 Project Description
@@ -198,13 +231,12 @@ export default function PrintingServicesPage() {
                 rows={3}
               />
             </div>
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="material" className="font-medium">
                   Material*
-                </label>
-                <Select onValueChange={setMaterial} required>
+                </label>{" "}
+                <Select value={material} onValueChange={setMaterial} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select material" />
                   </SelectTrigger>
@@ -233,7 +265,6 @@ export default function PrintingServicesPage() {
                 />
               </div>
             </div>
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="quantity" className="font-medium">
@@ -266,8 +297,11 @@ export default function PrintingServicesPage() {
               <div className="space-y-2">
                 <label htmlFor="layerHeight" className="font-medium">
                   Layer Height (mm)
-                </label>
-                <Select onValueChange={(v) => setLayerHeight(parseFloat(v))}>
+                </label>{" "}
+                <Select
+                  value={layerHeight.toString()}
+                  onValueChange={(v) => setLayerHeight(parseFloat(v))}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Layer height" />
                   </SelectTrigger>
@@ -279,12 +313,11 @@ export default function PrintingServicesPage() {
                 </Select>
               </div>
             </div>
-
             <div className="space-y-2">
               <label htmlFor="printQuality" className="font-medium">
                 Print Quality
-              </label>
-              <Select onValueChange={setPrintQuality}>
+              </label>{" "}
+              <Select value={printQuality} onValueChange={setPrintQuality}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select quality" />
                 </SelectTrigger>
@@ -300,8 +333,19 @@ export default function PrintingServicesPage() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>{" "}
+            <div className="space-y-2">
+              <label className="font-medium">Preview Images (Optional)</label>
+              <ImageUpload
+                value={images}
+                onChange={setImages}
+                maxFiles={5}
+                folder="print-orders/preview-images"
+              />
+              <p className="text-muted-foreground mt-2 text-sm">
+                {`Images of your model or examples of what you're trying to achieve`}
+              </p>
             </div>
-
             <div className="space-y-2">
               <label className="font-medium">Model Files*</label>
               <div className="border-input rounded-md border p-4">
@@ -316,23 +360,6 @@ export default function PrintingServicesPage() {
                 </p>
               </div>
             </div>
-
-            <div className="space-y-2">
-              <label className="font-medium">Preview Images (Optional)</label>
-              <div className="border-input rounded-md border p-4">
-                <Input
-                  type="file"
-                  className="cursor-pointer"
-                  accept="image/*"
-                  multiple
-                />
-                <p className="text-muted-foreground mt-2 text-sm">
-                  {`Images of your model or example of what you're trying to
-                  achieve`}
-                </p>
-              </div>
-            </div>
-
             <div className="space-y-4 rounded-md border p-4">
               <h3 className="font-medium">Additional Options</h3>
 
@@ -419,12 +446,10 @@ export default function PrintingServicesPage() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <Button type="submit" className="w-full">
-              Submit 3D Print Request
+            </div>{" "}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit 3D Print Request"}
             </Button>
-
             <p className="text-muted-foreground text-sm">
               By submitting this form, you agree to our 3D printing service
               terms and conditions.

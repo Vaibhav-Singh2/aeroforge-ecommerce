@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
@@ -20,23 +21,49 @@ export default function RepairServicesPage() {
   const [issueDescription, setIssueDescription] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [images, setImages] = useState<string[]>([]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // This would be connected to a real submission function
-  const handleSubmitRepairRequest = (e: React.FormEvent) => {
+  const handleSubmitRepairRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission functionality
-    console.log({
-      deviceType,
-      deviceModel,
-      deviceBrand,
-      issueDescription,
-      contactPhone,
-      images,
-    });
 
-    // Redirect or show success message
-    // router.push("/account/repair-orders");
-    alert("Repair request submitted! We'll contact you with a quote soon.");
+    // Check required fields
+    if (!deviceType || !deviceBrand || !issueDescription) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // In a real implementation, this would be an API call to store the repair request
+      // including the blob URLs in the database
+
+      console.log({
+        deviceType,
+        deviceModel,
+        deviceBrand,
+        issueDescription,
+        contactPhone,
+        images, // These are already Blob URLs stored in Vercel Blob storage
+      });
+
+      // Redirect or show success message
+      // router.push("/account/repair-orders");
+      alert("Repair request submitted! We'll contact you with a quote soon.");
+
+      // Reset the form
+      setDeviceType("");
+      setDeviceModel("");
+      setDeviceBrand("");
+      setIssueDescription("");
+      setContactPhone("");
+      setImages([]);
+    } catch (error) {
+      console.error("Error submitting repair request:", error);
+      alert("There was an error submitting your request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -149,12 +176,17 @@ export default function RepairServicesPage() {
 
           <form onSubmit={handleSubmitRepairRequest} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {" "}
               <div className="space-y-2">
                 <label htmlFor="deviceType" className="font-medium">
                   Device Type*
                 </label>
-                <Select onValueChange={setDeviceType} required>
-                  <SelectTrigger>
+                <Select
+                  value={deviceType}
+                  onValueChange={(value) => setDeviceType(value)}
+                  required
+                >
+                  <SelectTrigger id="deviceType">
                     <SelectValue placeholder="Select device type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -166,7 +198,6 @@ export default function RepairServicesPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <label htmlFor="deviceBrand" className="font-medium">
                   Brand (Optional)
@@ -179,7 +210,6 @@ export default function RepairServicesPage() {
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <label htmlFor="deviceModel" className="font-medium">
                 Model/Name*
@@ -192,7 +222,6 @@ export default function RepairServicesPage() {
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label htmlFor="issueDescription" className="font-medium">
                 Describe the Issue*
@@ -206,7 +235,6 @@ export default function RepairServicesPage() {
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label htmlFor="contactPhone" className="font-medium">
                 Contact Phone*
@@ -218,28 +246,23 @@ export default function RepairServicesPage() {
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
               />
-            </div>
-
+            </div>{" "}
             <div className="space-y-2">
               <label className="font-medium">Upload Images (Optional)</label>
-              <div className="border-input rounded-md border p-4">
-                <Input
-                  type="file"
-                  className="cursor-pointer"
-                  accept="image/*"
-                  multiple
-                />
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Images showing the damage or issues will help us provide a
-                  more accurate quote.
-                </p>
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full">
-              Submit Repair Request
+              <ImageUpload
+                value={images}
+                onChange={setImages}
+                maxFiles={5}
+                folder="repair-orders/images"
+              />
+              <p className="text-muted-foreground mt-2 text-sm">
+                Images showing the damage or issues will help us provide a more
+                accurate quote.
+              </p>
+            </div>{" "}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit Repair Request"}
             </Button>
-
             <p className="text-muted-foreground text-sm">
               By submitting this form, you agree to our repair service terms and
               conditions.
@@ -275,9 +298,9 @@ export default function RepairServicesPage() {
               How will I know when my repair is completed?
             </h3>
             <p className="text-muted-foreground mt-1">
-              You'll receive email and SMS notifications at each stage of the
+              {`You'll receive email and SMS notifications at each stage of the
               repair process, including when your device is ready for pickup or
-              shipment.
+              shipment.`}
             </p>
           </div>
 
@@ -286,9 +309,9 @@ export default function RepairServicesPage() {
               What if my device cannot be repaired?
             </h3>
             <p className="text-muted-foreground mt-1">
-              If we determine your device cannot be repaired, we'll notify you
+              {`If we determine your device cannot be repaired, we'll notify you
               and only charge a diagnostic fee. We can also provide
-              recommendations for replacement options.
+              recommendations for replacement options.`}
             </p>
           </div>
         </div>
