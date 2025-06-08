@@ -30,7 +30,7 @@ export default clerkMiddleware(async (auth, req) => {
   // For protected routes, check if user is authenticated
   if (isProtectedRoute(req)) {
     // If user is not authenticated, redirect to sign-in
-    if (!(await auth()).userId) {
+    if (!(await auth()).sessionId) {
       // Store the current URL to redirect back after sign-in
       const signInUrl = new URL("/sign-in", req.url);
       signInUrl.searchParams.set("redirect_url", req.nextUrl.pathname);
@@ -42,7 +42,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // If user is authenticated but trying to access auth pages
   if (
-    (await auth()).userId &&
+    (await auth()).sessionId &&
     (req.nextUrl.pathname.startsWith("/sign-in") ||
       req.nextUrl.pathname.startsWith("/sign-up"))
   ) {
@@ -54,11 +54,10 @@ export default clerkMiddleware(async (auth, req) => {
   return NextResponse.next();
 });
 
+// Export configurations
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
+    // Skip middleware for admin routes to avoid conflicts with middleware-admin.ts
+    "/((?!api|_next/static|_next/image|admin|favicon.ico).*)",
   ],
 };
