@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,34 +25,50 @@ export default function RepairServicesPage() {
   const [contactPhone, setContactPhone] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // This would be connected to a real submission function
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [repairNumber, setRepairNumber] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Handle form submission
   const handleSubmitRepairRequest = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     // Check required fields
-    if (!deviceType || !deviceBrand || !issueDescription) {
-      alert("Please fill out all required fields.");
+    if (!deviceType || !deviceModel || !issueDescription || !contactPhone) {
+      setError("Please fill out all required fields.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // In a real implementation, this would be an API call to store the repair request
-      // including the blob URLs in the database
-
-      console.log({
-        deviceType,
-        deviceModel,
-        deviceBrand,
-        issueDescription,
-        contactPhone,
-        images, // These are already Blob URLs stored in Vercel Blob storage
+      // Submit repair request to the API
+      const response = await fetch("/api/repair-orders/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deviceType,
+          deviceModel,
+          deviceBrand,
+          issueDescription,
+          contactPhone,
+          images, // These are already Blob URLs stored in Vercel Blob storage
+        }),
       });
 
-      // Redirect or show success message
-      // router.push("/account/repair-orders");
-      alert("Repair request submitted! We'll contact you with a quote soon.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit repair request");
+      }
+
+      // Set success state and repair number
+      setSuccess(true);
+      setRepairNumber(data.repairOrder.repairNumber);
 
       // Reset the form
       setDeviceType("");
@@ -58,9 +77,16 @@ export default function RepairServicesPage() {
       setIssueDescription("");
       setContactPhone("");
       setImages([]);
+
+      // After 3 seconds, redirect to the repair orders page
+      setTimeout(() => {
+        router.push("/account/repair-orders");
+      }, 3000);
     } catch (error) {
       console.error("Error submitting repair request:", error);
-      alert("There was an error submitting your request. Please try again.");
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -260,7 +286,48 @@ export default function RepairServicesPage() {
                 accurate quote.
               </p>
             </div>{" "}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {error && (
+              <div className="mb-4 rounded-md bg-red-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Error</h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>{error}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {success && repairNumber && (
+              <div className="mb-4 rounded-md bg-green-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-green-800">
+                      Repair Request Submitted!
+                    </h3>
+                    <div className="mt-2 text-sm text-green-700">
+                      <p>
+                        Your repair request number is{" "}
+                        <span className="font-bold">{repairNumber}</span>. We'll
+                        contact you with a quote soon. Redirecting to your
+                        repair orders...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || success}
+            >
               {isSubmitting ? "Submitting..." : "Submit Repair Request"}
             </Button>
             <p className="text-muted-foreground text-sm">

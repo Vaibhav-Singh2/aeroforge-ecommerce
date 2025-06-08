@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { FileUpload } from "@/components/ui/file-upload";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -29,42 +32,74 @@ export default function PrintingServicesPage() {
   const [postProcessingOptions, setPostProcessingOptions] = useState<string[]>(
     [],
   );
-  const [fileUrls, setFileUrls] = useState<string[]>([]);
+  const [files, setFiles] = useState<Array<{ name: string; url: string }>>([]);
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [printNumber, setPrintNumber] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handlePostProcessingChange = (option: string) => {
+    setPostProcessingOptions((current) => {
+      if (current.includes(option)) {
+        return current.filter((item) => item !== option);
+      } else {
+        return [...current, option];
+      }
+    });
+  };
+
   const handleSubmitPrintRequest = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     // Check required fields
     if (!projectName || !material) {
-      alert("Please fill out all required fields.");
+      setError("Please fill out all required fields.");
+      return;
+    }
+
+    if (files.length === 0) {
+      setError("Please upload at least one model file.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // In a real implementation, this would be an API call to store the print request
-      // including the blob URLs in the database
-
-      console.log({
-        projectName,
-        description,
-        quantity,
-        material,
-        color,
-        infill,
-        layerHeight,
-        printQuality,
-        isRush,
-        needsSupports,
-        postProcessingOptions,
-        fileUrls,
-        images, // These are already Blob URLs stored in Vercel Blob storage
+      // Submit print request to the API
+      const response = await fetch("/api/print-orders/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectName,
+          description,
+          quantity,
+          material,
+          color,
+          infill,
+          layerHeight,
+          printQuality,
+          isRush,
+          needsSupports,
+          postProcessingOptions,
+          fileUrls: files.map((file) => file.url),
+          images, // These are already Blob URLs stored in Vercel Blob storage
+        }),
       });
 
-      // Redirect or show success message
-      alert("3D Print request submitted! We'll contact you with a quote soon.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit print request");
+      }
+
+      // Set success state and print number
+      setSuccess(true);
+      setPrintNumber(data.printOrder.printNumber);
 
       // Reset the form
       setProjectName("");
@@ -78,24 +113,21 @@ export default function PrintingServicesPage() {
       setIsRush(false);
       setNeedsSupports(false);
       setPostProcessingOptions([]);
-      setFileUrls([]);
+      setFiles([]);
       setImages([]);
+
+      // After 3 seconds, redirect to the print orders page
+      setTimeout(() => {
+        router.push("/account/print-orders");
+      }, 3000);
     } catch (error) {
       console.error("Error submitting print request:", error);
-      alert("There was an error submitting your request. Please try again.");
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred",
+      );
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePostProcessingChange = (option: string) => {
-    setPostProcessingOptions((current) => {
-      if (current.includes(option)) {
-        return current.filter((item) => item !== option);
-      } else {
-        return [...current, option];
-      }
-    });
   };
 
   return (
@@ -167,8 +199,8 @@ export default function PrintingServicesPage() {
               <div>
                 <h3 className="font-medium">Receive a Quote</h3>
                 <p className="text-muted-foreground">
-                  Our team will review your design and provide a detailed quote
-                  within 24 hours.
+                  Our team will review your design and send you a detailed quote
+                  based on material, size, and complexity.
                 </p>
               </div>
             </div>
@@ -178,10 +210,10 @@ export default function PrintingServicesPage() {
                 3
               </div>
               <div>
-                <h3 className="font-medium">Approve and Pay</h3>
+                <h3 className="font-medium">Approve and Print</h3>
                 <p className="text-muted-foreground">
-                  Review and approve the quote, then make payment to initiate
-                  printing.
+                  Once you approve the quote and make a payment, we&apos;ll
+                  begin printing your design.
                 </p>
               </div>
             </div>
@@ -191,13 +223,28 @@ export default function PrintingServicesPage() {
                 4
               </div>
               <div>
-                <h3 className="font-medium">Production and Delivery</h3>
+                <h3 className="font-medium">Delivery</h3>
                 <p className="text-muted-foreground">
-                  {`We'll print and finish your item according to specifications,
-                  then ship or prepare it for pickup.`}
+                  {" "}
+                  {`We&apos;ll notify you when your print is ready for pickup or
+                  shipping.`}
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="mt-8 rounded-xl bg-slate-100 p-4 dark:bg-slate-800">
+            <h3 className="mb-2 font-medium">Material Options</h3>
+            <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
+              <li>PLA - Economical, great for most projects</li>
+              <li>ABS - Durable with higher heat resistance</li>
+              <li>PETG - Strong with good flexibility</li>
+              <li>TPU - Flexible rubber-like material</li>
+              <li>Wood Fill - PLA infused with wood particles</li>
+              <li>Carbon Fiber - PLA with carbon fiber reinforcement</li>
+              <li>Metal Fill - PLA infused with metal particles</li>
+              <li>Resin - Highly detailed photopolymer resin prints</li>
+            </ul>
           </div>
         </div>
 
@@ -213,7 +260,7 @@ export default function PrintingServicesPage() {
               </label>
               <Input
                 id="projectName"
-                placeholder="Name your print project"
+                placeholder="Name your 3D printing project"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 required
@@ -231,13 +278,48 @@ export default function PrintingServicesPage() {
                 rows={3}
               />
             </div>
+
+            <div className="space-y-2">
+              <label className="font-medium">Upload 3D Model Files*</label>
+              <FileUpload
+                value={files}
+                onChange={setFiles}
+                maxFiles={5}
+                acceptedFileTypes=".stl,.obj"
+                maxSizeInMB={50}
+              />
+              <p className="text-muted-foreground mt-2 text-sm">
+                Please upload your STL or OBJ files. Max file size: 50MB per
+                file.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="font-medium">
+                Upload Reference Images (Optional)
+              </label>
+              <ImageUpload
+                value={images}
+                onChange={setImages}
+                maxFiles={3}
+                folder="print-orders/images"
+              />
+              <p className="text-muted-foreground mt-2 text-sm">
+                Images showing what you expect the final print to look like.
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="material" className="font-medium">
                   Material*
-                </label>{" "}
-                <Select value={material} onValueChange={setMaterial} required>
-                  <SelectTrigger>
+                </label>
+                <Select
+                  value={material}
+                  onValueChange={(value) => setMaterial(value)}
+                  required
+                >
+                  <SelectTrigger id="material">
                     <SelectValue placeholder="Select material" />
                   </SelectTrigger>
                   <SelectContent>
@@ -252,37 +334,35 @@ export default function PrintingServicesPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <label htmlFor="color" className="font-medium">
-                  Color (if applicable)
+                  Color
                 </label>
                 <Input
                   id="color"
-                  placeholder="e.g. Red, Blue, Black"
+                  placeholder="e.g., Red, Blue, Black"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="quantity" className="font-medium">
-                  Quantity*
+                  Quantity
                 </label>
                 <Input
                   id="quantity"
                   type="number"
                   min="1"
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
-                  required
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                 />
               </div>
-
               <div className="space-y-2">
                 <label htmlFor="infill" className="font-medium">
-                  Infill % (10-100)
+                  Infill Percentage
                 </label>
                 <Input
                   id="infill"
@@ -290,164 +370,172 @@ export default function PrintingServicesPage() {
                   min="10"
                   max="100"
                   value={infill}
-                  onChange={(e) => setInfill(parseInt(e.target.value))}
+                  onChange={(e) => setInfill(parseInt(e.target.value) || 20)}
                 />
+                <p className="text-muted-foreground text-xs">
+                  Higher values = stronger prints, but more material used.
+                  Default: 20%
+                </p>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="layerHeight" className="font-medium">
-                  Layer Height (mm)
-                </label>{" "}
+                  Layer Height
+                </label>
                 <Select
                   value={layerHeight.toString()}
-                  onValueChange={(v) => setLayerHeight(parseFloat(v))}
+                  onValueChange={(value) => setLayerHeight(parseFloat(value))}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Layer height" />
+                  <SelectTrigger id="layerHeight">
+                    <SelectValue placeholder="Select layer height" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0.1">0.1mm (Fine)</SelectItem>
+                    <SelectItem value="0.1">
+                      0.1mm (High Detail, Slower)
+                    </SelectItem>
                     <SelectItem value="0.2">0.2mm (Standard)</SelectItem>
-                    <SelectItem value="0.3">0.3mm (Draft)</SelectItem>
+                    <SelectItem value="0.3">
+                      0.3mm (Fast, Less Detail)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="printQuality" className="font-medium">
+                  Print Quality
+                </label>
+                <Select
+                  value={printQuality}
+                  onValueChange={(value) => setPrintQuality(value)}
+                >
+                  <SelectTrigger id="printQuality">
+                    <SelectValue placeholder="Select quality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft (Fastest)</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="high">High (Slowest)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="printQuality" className="font-medium">
-                Print Quality
-              </label>{" "}
-              <Select value={printQuality} onValueChange={setPrintQuality}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select quality" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">
-                    Draft - Faster, visible layers
-                  </SelectItem>
-                  <SelectItem value="normal">
-                    Normal - Balanced quality and speed
-                  </SelectItem>
-                  <SelectItem value="high">
-                    High - Slower, finer details
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>{" "}
-            <div className="space-y-2">
-              <label className="font-medium">Preview Images (Optional)</label>
-              <ImageUpload
-                value={images}
-                onChange={setImages}
-                maxFiles={5}
-                folder="print-orders/preview-images"
-              />
-              <p className="text-muted-foreground mt-2 text-sm">
-                {`Images of your model or examples of what you're trying to achieve`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <label className="font-medium">Model Files*</label>
-              <div className="border-input rounded-md border p-4">
-                <Input
-                  type="file"
-                  className="cursor-pointer"
-                  accept=".stl,.obj"
-                  multiple
-                />
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Upload your 3D model files (.STL or .OBJ format)
-                </p>
-              </div>
-            </div>
-            <div className="space-y-4 rounded-md border p-4">
-              <h3 className="font-medium">Additional Options</h3>
 
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="isRush"
-                  checked={isRush}
-                  onCheckedChange={() => setIsRush(!isRush)}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor="isRush"
-                    className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Rush Order (+50% fee)
+            <div className="space-y-2">
+              <label className="font-medium">Options</label>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isRush"
+                    checked={isRush}
+                    onCheckedChange={(checked) => setIsRush(!!checked)}
+                  />
+                  <label htmlFor="isRush" className="text-sm">
+                    Rush Order (additional fee applies)
                   </label>
-                  <p className="text-muted-foreground text-sm">
-                    Prioritize your order for faster printing and processing
-                  </p>
                 </div>
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="needsSupports"
-                  checked={needsSupports}
-                  onCheckedChange={() => setNeedsSupports(!needsSupports)}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor="needsSupports"
-                    className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="needsSupports"
+                    checked={needsSupports}
+                    onCheckedChange={(checked) => setNeedsSupports(!!checked)}
+                  />
+                  <label htmlFor="needsSupports" className="text-sm">
                     Add Support Structures
                   </label>
-                  <p className="text-muted-foreground text-sm">
-                    Recommended for complex designs with overhangs
-                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Post-Processing Options
-                </label>
-                <div className="ml-6 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sanding"
-                      checked={postProcessingOptions.includes("sanding")}
-                      onCheckedChange={() =>
-                        handlePostProcessingChange("sanding")
-                      }
-                    />
-                    <label htmlFor="sanding" className="text-sm">
-                      Sanding
-                    </label>
+            <div className="space-y-2">
+              <label className="font-medium">Post-Processing Options</label>
+              <div className="ml-6 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="sanding"
+                    checked={postProcessingOptions.includes("sanding")}
+                    onCheckedChange={() =>
+                      handlePostProcessingChange("sanding")
+                    }
+                  />
+                  <label htmlFor="sanding" className="text-sm">
+                    Sanding
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="painting"
+                    checked={postProcessingOptions.includes("painting")}
+                    onCheckedChange={() =>
+                      handlePostProcessingChange("painting")
+                    }
+                  />
+                  <label htmlFor="painting" className="text-sm">
+                    Painting
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="assembly"
+                    checked={postProcessingOptions.includes("assembly")}
+                    onCheckedChange={() =>
+                      handlePostProcessingChange("assembly")
+                    }
+                  />
+                  <label htmlFor="assembly" className="text-sm">
+                    Assembly
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 rounded-md bg-red-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-red-400" />
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="painting"
-                      checked={postProcessingOptions.includes("painting")}
-                      onCheckedChange={() =>
-                        handlePostProcessingChange("painting")
-                      }
-                    />
-                    <label htmlFor="painting" className="text-sm">
-                      Painting
-                    </label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="assembly"
-                      checked={postProcessingOptions.includes("assembly")}
-                      onCheckedChange={() =>
-                        handlePostProcessingChange("assembly")
-                      }
-                    />
-                    <label htmlFor="assembly" className="text-sm">
-                      Assembly
-                    </label>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Error</h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>{error}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>{" "}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            )}
+
+            {success && printNumber && (
+              <div className="mb-4 rounded-md bg-green-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <CheckCircle2 className="h-5 w-5 text-green-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-green-800">
+                      Print Request Submitted!
+                    </h3>
+                    <div className="mt-2 text-sm text-green-700">
+                      <p>
+                        Your print request number is{" "}
+                        <span className="font-bold">{printNumber}</span>.
+                        We&apos;ll contact you with a quote soon. Redirecting to
+                        your print orders...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || success}
+            >
               {isSubmitting ? "Submitting..." : "Submit 3D Print Request"}
             </Button>
             <p className="text-muted-foreground text-sm">
@@ -467,8 +555,9 @@ export default function PrintingServicesPage() {
           <div className="rounded-lg border p-4">
             <h3 className="font-medium">What file formats do you accept?</h3>
             <p className="text-muted-foreground mt-1">
+              {" "}
               {`We accept STL and OBJ files. If you have a different format,
-              please contact us and we'll see if we can work with it.`}
+              please contact us and we&apos;ll see if we can work with it.`}
             </p>
           </div>
 
@@ -491,7 +580,7 @@ export default function PrintingServicesPage() {
 
           <div className="rounded-lg border p-4">
             <h3 className="font-medium">
-              {`What's the largest size you can print?`}
+              {`What&apos;s the largest size you can print?`}
             </h3>
             <p className="text-muted-foreground mt-1">
               Our largest printer has a build volume of 300mm x 300mm x 400mm.
