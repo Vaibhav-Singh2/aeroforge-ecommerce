@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 
-// This would normally come from your API
+// Type definition for Print Order
 type PrintOrder = {
   id: string;
   printNumber: string;
@@ -26,51 +26,70 @@ type PrintOrder = {
   status: string;
   createdAt: Date;
   totalCost: number | null;
+  quoteSentAt?: Date;
+  quoteApprovedAt?: Date;
+  printStartedAt?: Date;
+  completedAt?: Date;
 };
 
 export default function PrintOrdersPage() {
   const router = useRouter();
   const [printOrders, setPrintOrders] = useState<PrintOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - this would be replaced with an actual API call
+  // Fetch print orders from the API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setPrintOrders([
-        {
-          id: "1",
-          printNumber: "PRT12345",
-          projectName: "Custom Drone Frame",
-          material: "PLA",
-          quantity: 1,
-          status: "PRINTING",
-          createdAt: new Date(2025, 5, 4), // June 4, 2025
-          totalCost: 1299,
-        },
-        {
-          id: "2",
-          printNumber: "PRT12346",
-          projectName: "RC Car Parts Set",
-          material: "PETG",
-          quantity: 4,
-          status: "QUOTE_APPROVED",
-          createdAt: new Date(2025, 5, 17), // June 17, 2025
-          totalCost: 899,
-        },
-        {
-          id: "3",
-          printNumber: "PRT12347",
-          projectName: "Drone Landing Gear",
-          material: "TPU",
-          quantity: 2,
-          status: "COMPLETED",
-          createdAt: new Date(2025, 5, 1), // June 1, 2025
-          totalCost: 599,
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    const fetchPrintOrders = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/print-orders");
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform dates from strings to Date objects
+        const ordersWithDates = data.printOrders.map(
+          (
+            order: PrintOrder & {
+              createdAt: string;
+              quoteSentAt?: string;
+              quoteApprovedAt?: string;
+              printStartedAt?: string;
+              completedAt?: string;
+            },
+          ) => ({
+            ...order,
+            createdAt: new Date(order.createdAt),
+            quoteSentAt: order.quoteSentAt
+              ? new Date(order.quoteSentAt)
+              : undefined,
+            quoteApprovedAt: order.quoteApprovedAt
+              ? new Date(order.quoteApprovedAt)
+              : undefined,
+            printStartedAt: order.printStartedAt
+              ? new Date(order.printStartedAt)
+              : undefined,
+            completedAt: order.completedAt
+              ? new Date(order.completedAt)
+              : undefined,
+          }),
+        );
+
+        setPrintOrders(ordersWithDates);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch print orders:", err);
+        setError("Failed to load your print orders. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPrintOrders();
   }, []);
 
   // Status badge colors
@@ -141,12 +160,21 @@ export default function PrintOrdersPage() {
           <CardTitle>Your 3D Print History</CardTitle>
         </CardHeader>
         <CardContent>
+          {" "}
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
               <div className="text-center">
                 <div className="border-primary mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"></div>
                 <p>Loading your print orders...</p>
               </div>
+            </div>
+          ) : error ? (
+            <div className="py-8 text-center">
+              <h3 className="mb-1 text-lg font-medium text-red-500">Error</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
             </div>
           ) : printOrders.length > 0 ? (
             <div className="overflow-auto">

@@ -16,57 +16,75 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 
-// This would normally come from your API
+// Type definition for Repair Order
 type RepairOrder = {
   id: string;
   repairNumber: string;
   deviceType: string;
   deviceModel: string;
+  deviceBrand?: string;
   status: string;
   createdAt: Date;
   estimatedCost: number | null;
+  quoteSentAt?: Date;
+  quoteApprovedAt?: Date;
+  completedAt?: Date;
 };
 
 export default function RepairOrdersPage() {
   const router = useRouter();
   const [repairOrders, setRepairOrders] = useState<RepairOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - this would be replaced with an actual API call
+  // Fetch repair orders from the API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setRepairOrders([
-        {
-          id: "1",
-          repairNumber: "REP12345",
-          deviceType: "drone",
-          deviceModel: "Phantom 4 Pro",
-          status: "QUOTE_SENT",
-          createdAt: new Date(2025, 5, 1), // June 1, 2025
-          estimatedCost: 3499,
-        },
-        {
-          id: "2",
-          repairNumber: "REP12346",
-          deviceType: "rc-car",
-          deviceModel: "Traxxas Slash",
-          status: "IN_PROGRESS",
-          createdAt: new Date(2025, 5, 15), // June 15, 2025
-          estimatedCost: 1999,
-        },
-        {
-          id: "3",
-          repairNumber: "REP12347",
-          deviceType: "rc-plane",
-          deviceModel: "HobbyZone Champ",
-          status: "COMPLETED",
-          createdAt: new Date(2025, 4, 20), // May 20, 2025
-          estimatedCost: 1299,
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    const fetchRepairOrders = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/repair-orders");
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform dates from strings to Date objects
+        const ordersWithDates = data.repairOrders.map(
+          (
+            order: RepairOrder & {
+              createdAt: string;
+              quoteSentAt?: string;
+              quoteApprovedAt?: string;
+              completedAt?: string;
+            },
+          ) => ({
+            ...order,
+            createdAt: new Date(order.createdAt),
+            quoteSentAt: order.quoteSentAt
+              ? new Date(order.quoteSentAt)
+              : undefined,
+            quoteApprovedAt: order.quoteApprovedAt
+              ? new Date(order.quoteApprovedAt)
+              : undefined,
+            completedAt: order.completedAt
+              ? new Date(order.completedAt)
+              : undefined,
+          }),
+        );
+
+        setRepairOrders(ordersWithDates);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch repair orders:", err);
+        setError("Failed to load your repair orders. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRepairOrders();
   }, []);
 
   // Status badge colors
@@ -126,12 +144,21 @@ export default function RepairOrdersPage() {
           <CardTitle>Your Repair History</CardTitle>
         </CardHeader>
         <CardContent>
+          {" "}
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
               <div className="text-center">
                 <div className="border-primary mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"></div>
                 <p>Loading your repair orders...</p>
               </div>
+            </div>
+          ) : error ? (
+            <div className="py-8 text-center">
+              <h3 className="mb-1 text-lg font-medium text-red-500">Error</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
             </div>
           ) : repairOrders.length > 0 ? (
             <div className="overflow-auto">

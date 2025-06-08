@@ -19,6 +19,14 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
 // This would normally come from your API
+type PrintSettings = {
+  temperature?: string;
+  bedTemperature?: string;
+  cooling?: string;
+  speed?: string;
+  [key: string]: string | undefined;
+};
+
 type PrintOrder = {
   id: string;
   printNumber: string;
@@ -50,7 +58,7 @@ type PrintOrder = {
   fileUrls?: string[];
   images?: string[];
   customerNotes?: string;
-  printSettings?: any;
+  printSettings?: PrintSettings;
 };
 
 export default function PrintOrderDetailPage({
@@ -61,109 +69,65 @@ export default function PrintOrderDetailPage({
   const router = useRouter();
   const [order, setOrder] = useState<PrintOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - this would be replaced with an actual API call
+  // Fetch print order details from the API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      if (params.id === "1") {
-        setOrder({
-          id: "1",
-          printNumber: "PRT12345",
-          projectName: "Custom Drone Frame",
-          description:
-            "Custom drone frame design with camera mount and battery compartment",
-          material: "PLA",
-          color: "Black",
-          quantity: 1,
-          infill: 50,
-          layerHeight: 0.2,
-          printQuality: "high",
-          status: "PRINTING",
-          isRush: false,
-          needsSupports: true,
-          postProcessing: ["sanding"],
-          estimatedVolume: 130,
-          estimatedWeight: 156,
-          estimatedTime: 420,
-          materialCost: 899,
-          laborCost: 400,
-          totalCost: 1299,
-          paidAmount: 650,
-          createdAt: new Date(2025, 5, 4), // June 4, 2025
-          quoteSentAt: new Date(2025, 5, 5), // June 5, 2025
-          quoteApprovedAt: new Date(2025, 5, 6), // June 6, 2025
-          printStartedAt: new Date(2025, 5, 7), // June 7, 2025
-          images: [
-            "https://images.unsplash.com/photo-1579829366248-204fe8413f31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fDNkJTIwcHJpbnRlZHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-            "https://images.unsplash.com/photo-1631733517623-ca94d7c33e8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGRyb25lJTIwZnJhbWV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-          ],
-          customerNotes:
-            "Please make sure the landing gear mounts are reinforced",
-          printSettings: {
-            temperature: "210°C",
-            bedTemperature: "60°C",
-            cooling: "100%",
-            speed: "40mm/s",
-          },
-        });
-      } else if (params.id === "2") {
-        setOrder({
-          id: "2",
-          printNumber: "PRT12346",
-          projectName: "RC Car Parts Set",
-          description: "Set of replacement parts for RC car",
-          material: "PETG",
-          color: "Red",
-          quantity: 4,
-          infill: 80,
-          layerHeight: 0.15,
-          printQuality: "high",
-          status: "QUOTE_APPROVED",
-          isRush: true,
-          needsSupports: true,
-          postProcessing: ["sanding", "painting"],
-          rushFee: 200,
-          materialCost: 499,
-          laborCost: 200,
-          totalCost: 899,
-          paidAmount: 450,
-          createdAt: new Date(2025, 5, 17), // June 17, 2025
-          quoteSentAt: new Date(2025, 5, 18), // June 18, 2025
-          quoteApprovedAt: new Date(2025, 5, 19), // June 19, 2025
-        });
-      } else {
-        setOrder({
-          id: "3",
-          printNumber: "PRT12347",
-          projectName: "Drone Landing Gear",
-          description: "Flexible landing gear for drone",
-          material: "TPU",
-          color: "White",
-          quantity: 2,
-          infill: 30,
-          layerHeight: 0.2,
-          printQuality: "normal",
-          status: "COMPLETED",
-          isRush: false,
-          needsSupports: false,
-          postProcessing: [],
-          materialCost: 399,
-          laborCost: 200,
-          totalCost: 599,
-          paidAmount: 599,
-          createdAt: new Date(2025, 5, 1), // June 1, 2025
-          quoteSentAt: new Date(2025, 5, 2), // June 2, 2025
-          quoteApprovedAt: new Date(2025, 5, 3), // June 3, 2025
-          printStartedAt: new Date(2025, 5, 4), // June 4, 2025
-          completedAt: new Date(2025, 5, 5), // June 5, 2025
-          images: [
-            "https://images.unsplash.com/photo-1527066236128-2ff79f7b9705?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bGFuZGluZyUyMGdlYXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-          ],
-        });
+    const fetchPrintOrder = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/print-orders/${params.id}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Print order not found");
+          }
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform dates from strings to Date objects and parse JSON fields
+        const orderData = data.printOrder;
+        const printSettings = orderData.printSettings
+          ? (orderData.printSettings as PrintSettings)
+          : undefined;
+
+        // Convert postProcessing to array if it's not already
+        const postProcessing = Array.isArray(orderData.postProcessing)
+          ? orderData.postProcessing
+          : [];
+
+        const formattedOrder: PrintOrder = {
+          ...orderData,
+          createdAt: new Date(orderData.createdAt),
+          quoteSentAt: orderData.quoteSentAt
+            ? new Date(orderData.quoteSentAt)
+            : undefined,
+          quoteApprovedAt: orderData.quoteApprovedAt
+            ? new Date(orderData.quoteApprovedAt)
+            : undefined,
+          printStartedAt: orderData.printStartedAt
+            ? new Date(orderData.printStartedAt)
+            : undefined,
+          completedAt: orderData.completedAt
+            ? new Date(orderData.completedAt)
+            : undefined,
+          printSettings,
+          postProcessing,
+        };
+
+        setOrder(formattedOrder);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch print order:", err);
+        setError("Failed to load print order details. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 1000);
+    };
+
+    fetchPrintOrder();
   }, [params.id]);
 
   // Status badge colors
@@ -227,6 +191,17 @@ export default function PrintOrderDetailPage({
           <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
           <p>Loading print details...</p>
         </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center">
+        <h2 className="mb-2 text-2xl font-semibold text-red-500">Error</h2>
+        <p className="text-muted-foreground mb-6">{error}</p>
+        <Button asChild>
+          <Link href="/account/print-orders">Back to Print Orders</Link>
+        </Button>
       </div>
     );
   }

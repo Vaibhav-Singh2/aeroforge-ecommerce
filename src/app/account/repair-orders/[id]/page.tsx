@@ -12,6 +12,12 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
 // This would normally come from your API
+type PartsUsed = {
+  name: string;
+  quantity: number;
+  price: number;
+};
+
 type RepairOrder = {
   id: string;
   repairNumber: string;
@@ -22,11 +28,7 @@ type RepairOrder = {
   issueDescription: string;
   diagnosisNotes?: string;
   repairNotes?: string;
-  partsUsed?: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+  partsUsed?: PartsUsed[];
   estimatedCost: number | null;
   finalCost: number | null;
   paidAmount: number;
@@ -47,95 +49,60 @@ export default function RepairOrderDetailPage({
   const router = useRouter();
   const [order, setOrder] = useState<RepairOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - this would be replaced with an actual API call
+  // Fetch repair order details from the API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      if (params.id === "1") {
-        setOrder({
-          id: "1",
-          repairNumber: "REP12345",
-          deviceType: "drone",
-          deviceModel: "Phantom 4 Pro",
-          deviceBrand: "DJI",
-          status: "QUOTE_SENT",
-          issueDescription:
-            "Drone crashed during flight, propellers damaged, and not powering on correctly.",
-          diagnosisNotes:
-            "Found damage to motor controller board and battery connection. Two propellers broken.",
-          partsUsed: [
-            { name: "Motor Controller Board", quantity: 1, price: 2499 },
-            { name: "Propeller Set", quantity: 1, price: 799 },
-          ],
-          estimatedCost: 3499,
-          finalCost: null,
-          paidAmount: 0,
-          createdAt: new Date(2025, 5, 1), // June 1, 2025
-          quoteSentAt: new Date(2025, 5, 2), // June 2, 2025
-          contactPhone: "+91 98765 43210",
-          customerNotes: "Please check if the camera is also damaged",
-          images: [
-            "https://images.unsplash.com/photo-1473968512647-3e447244af8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZHJvbmV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-            "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGRyb25lJTIwY3Jhc2h8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-          ],
-        });
-      } else if (params.id === "2") {
-        setOrder({
-          id: "2",
-          repairNumber: "REP12346",
-          deviceType: "rc-car",
-          deviceModel: "Traxxas Slash",
-          deviceBrand: "Traxxas",
-          status: "IN_PROGRESS",
-          issueDescription:
-            "Motor not running at full speed, overheating after short use.",
-          diagnosisNotes:
-            "ESC damaged and motor bearings worn out. Need replacement.",
-          repairNotes:
-            "Replaced ESC, cleaned and lubricated motor, replaced bearings.",
-          partsUsed: [
-            { name: "Electronic Speed Controller", quantity: 1, price: 1499 },
-            { name: "Motor Bearings Set", quantity: 1, price: 399 },
-          ],
-          estimatedCost: 1999,
-          finalCost: 1999,
-          paidAmount: 1999,
-          createdAt: new Date(2025, 5, 15), // June 15, 2025
-          quoteSentAt: new Date(2025, 5, 16), // June 16, 2025
-          quoteApprovedAt: new Date(2025, 5, 17), // June 17, 2025
-          contactPhone: "+91 98765 43210",
-        });
-      } else {
-        setOrder({
-          id: "3",
-          repairNumber: "REP12347",
-          deviceType: "rc-plane",
-          deviceModel: "HobbyZone Champ",
-          deviceBrand: "HobbyZone",
-          status: "COMPLETED",
-          issueDescription:
-            "Wing damaged during landing, servo not responding.",
-          diagnosisNotes:
-            "Servo motor failure, wing structure damaged but repairable.",
-          repairNotes:
-            "Replaced servo, repaired wing structure, calibrated controls.",
-          partsUsed: [
-            { name: "Micro Servo", quantity: 1, price: 799 },
-            { name: "Wing Repair Kit", quantity: 1, price: 399 },
-          ],
-          estimatedCost: 1299,
-          finalCost: 1299,
-          paidAmount: 1299,
-          createdAt: new Date(2025, 4, 20), // May 20, 2025
-          quoteSentAt: new Date(2025, 4, 21), // May 21, 2025
-          quoteApprovedAt: new Date(2025, 4, 22), // May 22, 2025
-          completedAt: new Date(2025, 4, 25), // May 25, 2025
-          contactPhone: "+91 98765 43210",
-        });
+    const fetchRepairOrder = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/repair-orders/${params.id}`);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Repair order not found");
+          }
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform dates from strings to Date objects and parse JSON fields
+        const orderData = data.repairOrder;
+
+        // Parse JSON fields if needed
+        const partsUsed = Array.isArray(orderData.partsUsed)
+          ? orderData.partsUsed
+          : [];
+
+        const formattedOrder: RepairOrder = {
+          ...orderData,
+          createdAt: new Date(orderData.createdAt),
+          quoteSentAt: orderData.quoteSentAt
+            ? new Date(orderData.quoteSentAt)
+            : undefined,
+          quoteApprovedAt: orderData.quoteApprovedAt
+            ? new Date(orderData.quoteApprovedAt)
+            : undefined,
+          completedAt: orderData.completedAt
+            ? new Date(orderData.completedAt)
+            : undefined,
+          partsUsed: partsUsed as PartsUsed[],
+        };
+
+        setOrder(formattedOrder);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch repair order:", err);
+        setError(
+          "Failed to load repair order details. Please try again later.",
+        );
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 1000);
+    };
+
+    fetchRepairOrder();
   }, [params.id]);
 
   // Status badge colors
@@ -188,6 +155,17 @@ export default function RepairOrderDetailPage({
           <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
           <p>Loading repair details...</p>
         </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center">
+        <h2 className="mb-2 text-2xl font-semibold text-red-500">Error</h2>
+        <p className="text-muted-foreground mb-6">{error}</p>
+        <Button asChild>
+          <Link href="/account/repair-orders">Back to Repair Orders</Link>
+        </Button>
       </div>
     );
   }
