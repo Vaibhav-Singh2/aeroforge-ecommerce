@@ -1,14 +1,15 @@
 import AdminPanelLayout from "@/components/admin/admin-panel-layout";
 import EditProductForm from "./edit-product-form";
 
-export default function EditProductPage({
+export default async function EditProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   return (
     <AdminPanelLayout title="Edit Product">
-      <EditProductForm productId={params.id} />
+      <EditProductForm productId={id} />
     </AdminPanelLayout>
   );
 }
