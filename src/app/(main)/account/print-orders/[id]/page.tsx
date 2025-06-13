@@ -64,7 +64,7 @@ type PrintOrder = {
 export default function PrintOrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [order, setOrder] = useState<PrintOrder | null>(null);
@@ -76,7 +76,7 @@ export default function PrintOrderDetailPage({
     const fetchPrintOrder = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/print-orders/${params.id}`);
+        const response = await fetch(`/api/print-orders/${(await params).id}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -128,7 +128,7 @@ export default function PrintOrderDetailPage({
     };
 
     fetchPrintOrder();
-  }, [params.id]);
+  }, [params]);
 
   // Status badge colors
   const getStatusBadge = (status: string) => {

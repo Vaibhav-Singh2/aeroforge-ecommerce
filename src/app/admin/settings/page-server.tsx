@@ -23,8 +23,9 @@ export default async function SettingsPage() {
           </div>
         }
       >
+        {" "}
         <SettingsForm
-          initialSettings={success ? siteSettings : null}
+          initialSettings={success && siteSettings ? siteSettings : null}
           admin={admin}
           error={error}
         />

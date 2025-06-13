@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // TODO: remove this when the issue is resolved
   eslint: {
-    ignoreDuringBuilds: true, // ignore ESLint errors during build
+    // ignoreDuringBuilds: true, // ignore ESLint errors during build
   },
   typescript: {
-    ignoreBuildErrors: true, // ignore TypeScript errors during build
+    // ignoreBuildErrors: true, // ignore TypeScript errors during build
   },
   /* config options here */
   images: {

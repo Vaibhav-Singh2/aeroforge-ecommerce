@@ -30,8 +30,7 @@ export async function getPrintOrders() {
     if (!admin) {
       return { success: false, error: "Unauthorized" };
     }
-
-    const printOrders = await prisma.printOrder.findMany({
+    const printOrdersData = await prisma.printOrder.findMany({
       select: {
         id: true,
         printNumber: true,
@@ -53,6 +52,13 @@ export async function getPrintOrders() {
         createdAt: "desc",
       },
     });
+
+    // Convert Date objects to strings
+    const printOrders = printOrdersData.map((order) => ({
+      ...order,
+      createdAt: order.createdAt.toISOString(),
+      completedAt: order.completedAt ? order.completedAt.toISOString() : null,
+    }));
 
     return { success: true, printOrders };
   } catch (error) {

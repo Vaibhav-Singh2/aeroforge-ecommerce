@@ -54,7 +54,14 @@ export async function getRepairOrders() {
       },
     });
 
-    return { success: true, repairOrders };
+    // Convert Date objects to ISO strings for client compatibility
+    const serializedOrders = repairOrders.map((order) => ({
+      ...order,
+      completedAt: order.completedAt ? order.completedAt.toISOString() : null,
+      createdAt: order.createdAt.toISOString(),
+    }));
+
+    return { success: true, repairOrders: serializedOrders };
   } catch (error) {
     console.error("Failed to get repair orders:", error);
     return {

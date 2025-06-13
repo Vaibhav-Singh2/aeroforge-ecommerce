@@ -12,30 +12,16 @@ export interface StoreSettings {
   faviconUrl: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
-  address: {
-    street: string | null;
-    city: string | null;
-    state: string | null;
-    postalCode: string | null;
-    country: string | null;
-  } | null;
-  socialLinks: {
-    facebook: string | null;
-    twitter: string | null;
-    instagram: string | null;
-    youtube: string | null;
-  } | null;
-  shippingOptions: {
-    id: string;
-    name: string;
-    price: number;
-    estimatedDeliveryDays: number;
-    isDefault: boolean;
-  }[];
-  taxSettings: {
-    rate: number;
-    applyToShipping: boolean;
-  } | null;
+  address: Record<string, unknown> | null; // Storing as JSON in the database
+  socialLinks: Record<string, unknown> | null; // Storing as JSON in the database
+  currency: string;
+  taxRate: number;
+  shippingRates: Record<string, unknown>[]; // Shipping options stored as JSON
+  enableReviews: boolean;
+  enableRepairs: boolean;
+  enable3DPrinting: boolean;
+  maintenanceMode: boolean;
+  updatedAt: string;
 }
 
 // Get site settings
@@ -48,13 +34,34 @@ export async function getSiteSettings() {
     }
 
     const siteSettings = await prisma.siteSettings.findFirst();
-
     if (!siteSettings) {
       // If no settings exist, create default settings
       return { success: true, siteSettings: null };
     }
 
-    return { success: true, siteSettings };
+    // Create a properly typed version of the settings
+    const typedSettings: StoreSettings = {
+      id: siteSettings.id,
+      siteName: siteSettings.siteName,
+      siteDescription: siteSettings.siteDescription,
+      logoUrl: siteSettings.logoUrl,
+      faviconUrl: siteSettings.faviconUrl,
+      contactEmail: siteSettings.contactEmail,
+      contactPhone: siteSettings.contactPhone,
+      // Type cast JSON fields properly
+      address: siteSettings.address as Record<string, unknown> | null,
+      socialLinks: siteSettings.socialLinks as Record<string, unknown> | null,
+      currency: siteSettings.currency,
+      taxRate: siteSettings.taxRate,
+      shippingRates: siteSettings.shippingRates as Record<string, unknown>[],
+      enableReviews: siteSettings.enableReviews,
+      enableRepairs: siteSettings.enableRepairs,
+      enable3DPrinting: siteSettings.enable3DPrinting,
+      maintenanceMode: siteSettings.maintenanceMode,
+      updatedAt: siteSettings.updatedAt.toISOString(),
+    };
+
+    return { success: true, siteSettings: typedSettings };
   } catch (error) {
     console.error("Failed to get site settings:", error);
     return {

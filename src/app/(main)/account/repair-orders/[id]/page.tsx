@@ -44,7 +44,7 @@ type RepairOrder = {
 export default function RepairOrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [order, setOrder] = useState<RepairOrder | null>(null);
@@ -56,7 +56,7 @@ export default function RepairOrderDetailPage({
     const fetchRepairOrder = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/repair-orders/${params.id}`);
+        const response = await fetch(`/api/repair-orders/${(await params).id}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -103,7 +103,7 @@ export default function RepairOrderDetailPage({
     };
 
     fetchRepairOrder();
-  }, [params.id]);
+  }, [params]);
 
   // Status badge colors
   const getStatusBadge = (status: string) => {

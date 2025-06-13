@@ -77,7 +77,7 @@ interface Order {
 export default function OrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { admin, isLoading } = useAdmin();
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function OrderDetailPage({
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await fetch(`/api/admin/orders/${params.id}`);
+        const response = await fetch(`/api/admin/orders/${(await params).id}`);
         if (!response.ok) throw new Error("Failed to fetch order details");
         const data = await response.json();
         setOrder(data);
@@ -110,14 +110,14 @@ export default function OrderDetailPage({
     if (admin) {
       fetchOrder();
     }
-  }, [admin, params.id]);
+  }, [admin, params]);
 
   // Handle status update
   const updateOrderStatus = async (newStatus: string) => {
     try {
       setOrderLoading(true);
 
-      const response = await fetch(`/api/admin/orders/${params.id}`, {
+      const response = await fetch(`/api/admin/orders/${(await params).id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
