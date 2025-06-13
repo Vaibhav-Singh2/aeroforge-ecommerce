@@ -4,6 +4,7 @@ import React from "react";
 import { Menu, Bell } from "lucide-react";
 import { useAdmin } from "@/lib/admin/admin-provider";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/themeToggle";
 
 interface AdminHeaderProps {
   title?: string;
@@ -31,6 +32,8 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
         </div>
 
         <div className="ml-auto flex items-center space-x-4">
+          <ThemeToggle />
+
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
             <span className="sr-only">Notifications</span>
