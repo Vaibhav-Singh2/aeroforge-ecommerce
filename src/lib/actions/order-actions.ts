@@ -107,7 +107,7 @@ export async function createOrder(input: CreateOrderInput) {
           totalAmount: input.totalAmount,
           status: OrderStatus.PENDING,
           paymentStatus: PaymentStatus.PENDING,
-          shippingAddressId: shippingAddress.id,
+          addressId: shippingAddress.id,
           shippingMethod: input.shippingMethod,
           customerNotes: input.customerNotes,
           items: {
@@ -198,7 +198,7 @@ export async function getUserOrders() {
             },
           },
         },
-        shippingAddress: true,
+        address: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -249,7 +249,7 @@ export async function getOrderById(input: GetOrderInput) {
             },
           },
         },
-        shippingAddress: true,
+        address: true,
       },
     });
 
@@ -326,7 +326,7 @@ export async function getOrderDetails(orderId: string) {
             variant: true,
           },
         },
-        shippingAddress: true,
+        address: true,
       },
     });
 

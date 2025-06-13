@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import AdminLoginForm from "./login-form";
 
 export default function AdminLoginPage() {
@@ -14,7 +14,11 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <AdminLoginForm />
+        <Suspense
+          fallback={<div className="text-center">Loading login form...</div>}
+        >
+          <AdminLoginForm />
+        </Suspense>
       </div>
     </div>
   );
