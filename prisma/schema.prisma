@@ -199,10 +199,10 @@ model Order {
   currency       String        @default("USD")
 
   // Shipping
-  shippingAddressId String?  @db.ObjectId
-  shippingAddress   Address? @relation(fields: [shippingAddressId], references: [id])
-  shippingMethod    String?
-  trackingNumber    String?
+  addressId      String?  @db.ObjectId
+  address        Address? @relation(fields: [addressId], references: [id])
+  shippingMethod String?
+  trackingNumber String?
 
   // Payment
   paymentMethod   String?

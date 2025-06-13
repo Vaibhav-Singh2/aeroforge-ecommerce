@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
 // Type for customer data

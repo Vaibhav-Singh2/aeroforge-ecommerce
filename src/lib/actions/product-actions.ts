@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { ProductStatus } from "@prisma/client";
-import { cookies } from "next/headers";
 
 // Type for product data
 export interface ProductData {

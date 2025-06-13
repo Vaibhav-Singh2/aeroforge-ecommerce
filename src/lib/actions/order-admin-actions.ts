@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 
 // Get all orders
 export async function getAdminOrders() {
@@ -62,7 +62,7 @@ export async function getAdminOrderDetails(orderId: string) {
             variant: true,
           },
         },
-        shippingAddress: true,
+        address: true,
       },
     });
 

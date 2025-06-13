@@ -327,7 +327,6 @@ export async function getOrderDetails(orderId: string) {
           },
         },
         shippingAddress: true,
-        billingAddress: true,
       },
     });
 
@@ -354,85 +353,102 @@ export async function getOrderDetails(orderId: string) {
 }
 
 /**
- * Update order status
- */
-export async function updateOrderStatus(formData: FormData) {
-  const orderId = formData.get("orderId") as string;
-  const status = formData.get("status") as string;
-
-  if (!orderId || !status) {
-    return { success: false, error: "Order ID and status are required" };
-  }
-
-  try {
-    const updatedOrder = await prisma.order.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        status: status as OrderStatus,
-      },
-    });
-
-    // Revalidate the orders page to update the UI
-    revalidatePath("/admin/orders");
-    revalidatePath(`/admin/orders/${orderId}`);
-
-    return {
-      success: true,
-      order: {
-        ...updatedOrder,
-        createdAt: updatedOrder.createdAt.toISOString(),
-        updatedAt: updatedOrder.updatedAt.toISOString(),
-      },
-    };
-  } catch (error) {
-    console.error("Failed to update order status:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update order status",
-    };
-  }
-}
-
-/**
- * Update order status (admin only in the future)
+ * Update order status - supports both FormData (admin UI) and direct parameter calls
  */
 export async function updateOrderStatus(
-  orderId: string,
-  status: OrderStatus,
-  paymentStatus: PaymentStatus,
+  formDataOrOrderId: FormData | string,
+  statusParam?: OrderStatus,
+  paymentStatusParam?: PaymentStatus,
 ) {
   try {
-    // Get authenticated user
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
+    let orderId: string;
+    let status: OrderStatus;
+    let paymentStatus: PaymentStatus | undefined;
+    const isFormData = formDataOrOrderId instanceof FormData;
 
-    // TODO: Add admin check here when admin functionality is implemented
+    // Handle different input formats
+    if (isFormData) {
+      // Case 1: Called from admin UI form
+      const formData = formDataOrOrderId as FormData;
+      orderId = formData.get("orderId") as string;
+      status = formData.get("status") as string as OrderStatus;
+
+      // Optional payment status from form
+      const paymentStatusStr = formData.get("paymentStatus") as string;
+      if (paymentStatusStr) {
+        paymentStatus = paymentStatusStr as PaymentStatus;
+      }
+
+      if (!orderId || !status) {
+        return { success: false, error: "Order ID and status are required" };
+      }
+    } else {
+      // Case 2: Called programmatically with direct parameters
+      orderId = formDataOrOrderId as string;
+      status = statusParam as OrderStatus;
+      paymentStatus = paymentStatusParam;
+
+      if (!orderId || !status) {
+        throw new Error("Order ID and status are required");
+      }
+
+      // For direct API calls, get authenticated user (future admin check)
+      const { userId } = await auth();
+      if (!userId) {
+        throw new Error("Authentication required");
+      }
+    } // Prepare update data
+    const updateData: {
+      status: OrderStatus;
+      paymentStatus?: PaymentStatus;
+    } = { status };
+
+    if (paymentStatus) {
+      updateData.paymentStatus = paymentStatus;
+    }
 
     // Update the order status
     const updatedOrder = await prisma.order.update({
       where: {
         id: orderId,
       },
-      data: {
-        status,
-        paymentStatus,
-      },
+      data: updateData,
     });
 
+    // Revalidate all relevant paths
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath("/account/orders");
     revalidatePath(`/account/orders/${orderId}`);
 
-    return updatedOrder;
+    // Return appropriate response based on call type
+    if (isFormData) {
+      return {
+        success: true,
+        order: {
+          ...updatedOrder,
+          createdAt: updatedOrder.createdAt.toISOString(),
+          updatedAt: updatedOrder.updatedAt.toISOString(),
+        },
+      };
+    } else {
+      return updatedOrder;
+    }
   } catch (error) {
     console.error("Failed to update order status:", error);
-    throw new Error("Failed to update order status. Please try again.");
+
+    // Return appropriate error format based on call type
+    if (formDataOrOrderId instanceof FormData) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to update order status",
+      };
+    } else {
+      throw new Error("Failed to update order status. Please try again.");
+    }
   }
 }
 

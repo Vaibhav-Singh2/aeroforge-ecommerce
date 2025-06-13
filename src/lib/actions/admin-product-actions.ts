@@ -10,7 +10,7 @@ import * as jose from "jose";
 async function getAdminSession() {
   try {
     // Get the token from the session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.has("admin_token")
       ? cookieStore.get("admin_token")?.value
       : undefined;

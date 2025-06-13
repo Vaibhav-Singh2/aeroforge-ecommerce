@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Filter, Eye, Wrench } from "lucide-react";
+import { Search, Filter, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";

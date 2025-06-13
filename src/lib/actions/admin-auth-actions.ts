@@ -71,7 +71,7 @@ export async function adminLogin(formData: FormData) {
       .sign(secret);
 
     // Set cookies
-    cookies().set({
+    (await cookies()).set({
       name: "admin_token",
       value: token,
       httpOnly: true,
@@ -100,7 +100,7 @@ export async function adminLogin(formData: FormData) {
 
 // Admin logout action
 export async function adminLogout() {
-  cookies().delete("admin_token");
+  (await cookies()).delete("admin_token");
   redirect("/admin/login");
 }
 
@@ -108,7 +108,7 @@ export async function adminLogout() {
 export async function getAdminSession() {
   try {
     // Get the token from the session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("admin_token")?.value;
 
     if (!token) {

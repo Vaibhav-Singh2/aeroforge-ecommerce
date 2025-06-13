@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, User, Mail, Key, Store, Shield } from "lucide-react";
+import { Save, User, Mail, Store, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,24 @@ import {
   updateSiteSettings,
 } from "@/lib/actions/settings-actions";
 
+interface StoreSettings {
+  id?: string;
+  siteName?: string;
+  siteDescription?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+}
+
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+}
+
 interface SettingsFormProps {
-  initialSettings: any;
-  admin: any;
+  initialSettings: StoreSettings | null;
+  admin: AdminUser | null;
   error?: string;
 }
 
