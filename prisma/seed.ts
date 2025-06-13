@@ -5,10 +5,11 @@ import {
   Product,
 } from "@prisma/client";
 import { faker } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const LOOP_COUNT = 20;
+const LOOP_COUNT = 0;
 
 async function createCategories(count: number = LOOP_COUNT) {
   console.log(`Starting seeding with ${count} categories...`);
@@ -80,12 +81,46 @@ async function createProducts(countPerCategory: number = 1) {
   console.log(`Created ${products.length} products successfully.`);
 }
 
+async function createDefaultAdmin() {
+  try {
+    // Check if any admin exists
+    const adminCount = await prisma.admin.count();
+
+    if (adminCount === 0) {
+      // Create default admin with secure password
+      const hashedPassword = await bcrypt.hash(
+        process.env.DEFAULT_ADMIN_PASSWORD || "adminpassword",
+        10,
+      );
+
+      await prisma.admin.create({
+        data: {
+          email: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",
+          password: hashedPassword,
+          name: "Admin",
+          role: "SUPER_ADMIN",
+        },
+      });
+
+      console.log("✅ Default admin account created successfully");
+    } else {
+      console.log("ℹ️ Admin account already exists, skipping creation");
+    }
+  } catch (error) {
+    console.error("❌ Error creating default admin:", error);
+    throw error;
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0]?.toLowerCase();
   const count = args[1] ? parseInt(args[1]) : LOOP_COUNT;
 
   try {
+    // Always try to create default admin first
+    await createDefaultAdmin();
+
     if (!command || command === "all") {
       await createCategories(count);
       await createProducts(count);
@@ -93,12 +128,20 @@ async function main() {
       await createCategories(count);
     } else if (command === "products") {
       await createProducts(count);
+    } else if (command === "admin") {
+      // Already done by createDefaultAdmin()
+      console.log("Admin seeding completed.");
     } else {
       console.error(
-        "Unknown command. Available commands: all, categories, products",
+        "Unknown command. Available commands: all, categories, products, admin",
       );
       console.log(
         "Usage: npx ts-node prisma/seed.ts [command] [categoryCount] [productsPerCategory]",
+        "\nCommands:",
+        "\n  all        - Create categories and products",
+        "\n  categories - Create only categories",
+        "\n  products   - Create only products",
+        "\n  admin      - Create default admin (if not exists)",
       );
       process.exit(1);
     }

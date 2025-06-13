@@ -57,7 +57,14 @@ export default clerkMiddleware(async (auth, req) => {
 // Export configurations
 export const config = {
   matcher: [
-    // Skip middleware for admin routes to avoid conflicts with middleware-admin.ts
-    "/((?!api|_next/static|_next/image|admin|favicon.ico).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - admin (handled by middleware-admin.ts)
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!admin|api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

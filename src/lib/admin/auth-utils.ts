@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
+import bcrypt from "bcryptjs";
 
 // Secret key for JWT token
 const JWT_SECRET = new TextEncoder().encode(
@@ -106,11 +107,9 @@ export async function authenticateAdmin(email: string, password: string) {
 
     if (!admin) {
       return { success: false, message: "Admin not found" };
-    }
-
-    // Compare passwords (in a real app, use bcrypt.compare)
-    // This is a simplified version for demonstration
-    if (admin.password !== password) {
+    } // Compare passwords using bcrypt
+    const isValidPassword = await bcrypt.compare(password, admin.password);
+    if (!isValidPassword) {
       return { success: false, message: "Invalid password" };
     }
 
@@ -143,13 +142,14 @@ export async function authenticateAdmin(email: string, password: string) {
  */
 export async function setupDefaultAdmin() {
   const adminCount = await prisma.admin.count();
-
   if (adminCount === 0) {
-    // Create a default admin
+    // Create a default admin with hashed password
+    const hashedPassword = await bcrypt.hash("adminpassword", 10);
+
     await prisma.admin.create({
       data: {
         email: "admin@example.com",
-        password: "adminpassword", // In production, use hashed passwords
+        password: hashedPassword,
         name: "Admin",
         role: "SUPER_ADMIN",
       },
