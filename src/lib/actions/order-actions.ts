@@ -265,6 +265,140 @@ export async function getOrderById(input: GetOrderInput) {
 }
 
 /**
+ * Get all orders for admin
+ */
+export async function getOrders() {
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      orders: orders.map((order) => ({
+        ...order,
+        createdAt: order.createdAt.toISOString(),
+        updatedAt: order.updatedAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    console.error("Failed to get orders:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get orders",
+    };
+  }
+}
+
+/**
+ * Get order details for admin
+ */
+export async function getOrderDetails(orderId: string) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+      include: {
+        user: true,
+        items: {
+          include: {
+            product: true,
+            variant: true,
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      },
+    });
+
+    if (!order) {
+      return { success: false, error: "Order not found" };
+    }
+
+    return {
+      success: true,
+      order: {
+        ...order,
+        createdAt: order.createdAt.toISOString(),
+        updatedAt: order.updatedAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error("Failed to get order details:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to get order details",
+    };
+  }
+}
+
+/**
+ * Update order status
+ */
+export async function updateOrderStatus(formData: FormData) {
+  const orderId = formData.get("orderId") as string;
+  const status = formData.get("status") as string;
+
+  if (!orderId || !status) {
+    return { success: false, error: "Order ID and status are required" };
+  }
+
+  try {
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status: status as OrderStatus,
+      },
+    });
+
+    // Revalidate the orders page to update the UI
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+
+    return {
+      success: true,
+      order: {
+        ...updatedOrder,
+        createdAt: updatedOrder.createdAt.toISOString(),
+        updatedAt: updatedOrder.updatedAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error("Failed to update order status:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update order status",
+    };
+  }
+}
+
+/**
  * Update order status (admin only in the future)
  */
 export async function updateOrderStatus(

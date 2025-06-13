@@ -6,6 +6,20 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Formats a date string into a readable format
+ * @param dateString ISO date string
+ * @returns formatted date string
+ */
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
+/**
  * Generates a unique order number in the format YYYYMMDD-XXXX
  * where XXXX is a random 4-digit number
  */

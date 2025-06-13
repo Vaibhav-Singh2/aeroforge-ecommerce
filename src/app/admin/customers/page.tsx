@@ -1,28 +1,28 @@
 import { Suspense } from "react";
 import AdminPanelLayout from "@/components/admin/admin-panel-layout";
-import ProductsTable from "./products-table";
-import { getProducts } from "@/lib/actions/product-actions";
+import CustomersTable from "./customers-table";
+import { getCustomers } from "@/lib/actions/customer-actions";
 
-export default async function ProductsPage() {
-  const { products, success, error } = await getProducts();
+export default async function CustomersPage() {
+  const { customers, success, error } = await getCustomers();
 
   return (
-    <AdminPanelLayout title="Products">
+    <AdminPanelLayout title="Customers">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-          Products
+          Customers
         </h1>
       </div>
 
       <Suspense
         fallback={
           <div className="flex h-40 items-center justify-center">
-            Loading products...
+            Loading customers...
           </div>
         }
       >
-        <ProductsTable
-          initialProducts={success ? products : []}
+        <CustomersTable
+          initialCustomers={success ? customers : []}
           error={error}
         />
       </Suspense>

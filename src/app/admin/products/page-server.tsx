@@ -9,9 +9,7 @@ export default async function ProductsPage() {
   return (
     <AdminPanelLayout title="Products">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-          Products
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
       </div>
 
       <Suspense
