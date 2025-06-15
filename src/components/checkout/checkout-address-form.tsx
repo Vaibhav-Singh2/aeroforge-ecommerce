@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Home, Building2 } from "lucide-react";
+import { Plus, Edit, Home } from "lucide-react";
 import { Address } from "@prisma/client";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { addToast } from "@/lib/redux/features/uiSlice";
@@ -147,17 +147,11 @@ export function CheckoutAddressForm({
                         </span>
                       )}
                       <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-                        {address.type === "shipping" ? (
-                          <>
-                            <Home className="h-3 w-3" />
-                            Shipping
-                          </>
-                        ) : (
-                          <>
-                            <Building2 className="h-3 w-3" />
-                            Billing
-                          </>
-                        )}
+                        {/* Assume all addresses are shipping by default */}
+                        <>
+                          <Home className="h-3 w-3" />
+                          Shipping
+                        </>
                       </span>
                     </div>
                     <div className="flex gap-1">
