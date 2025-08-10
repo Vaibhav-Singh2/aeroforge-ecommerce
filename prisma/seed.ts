@@ -98,7 +98,7 @@ async function createDefaultAdmin() {
           email: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",
           password: hashedPassword,
           name: "Admin",
-          role: "SUPER_ADMIN",
+          role: "ADMIN",
         },
       });
 

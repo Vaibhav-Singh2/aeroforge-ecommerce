@@ -41,7 +41,6 @@ model Admin {
 }
 
 enum AdminRole {
-  SUPER_ADMIN
   ADMIN
   EDITOR
 }
