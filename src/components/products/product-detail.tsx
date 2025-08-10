@@ -3,14 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { addCartItem } from "@/lib/redux/features/cartSlice";
-import { addToast } from "@/lib/redux/features/uiSlice";
 import { Product, ProductVariant, Category, Review } from "@prisma/client";
-import { addToCart } from "@/lib/actions/cart-actions";
+import { AddToCartButton } from "@/components/ui/add-to-cart-button";
 import {
   ChevronRight,
-  ShoppingCart,
+  // ShoppingCart,
   Heart,
   Star,
   Share2,
@@ -54,51 +51,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
       : null,
   );
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useAppDispatch();
 
   const handleQuantityChange = (value: number) => {
-    setQuantity(Math.max(1, Math.min(10, value))); // Limit between 1 and 10
-  };
-
-  const handleAddToCart = async () => {
-    setIsLoading(true);
-    try {
-      // Add to server-side cart
-      await addToCart(product.id, quantity, selectedVariant?.id);
-
-      // Update client-side cart state for immediate UI update
-      dispatch(
-        addCartItem({
-          id: `temp-${Date.now()}`, // Will be replaced on next refresh
-          productId: product.id,
-          variantId: selectedVariant?.id,
-          quantity,
-          product: product,
-          variant: selectedVariant,
-        }),
-      );
-
-      // Show success notification
-      dispatch(
-        addToast({
-          type: "success",
-          title: "Added to cart",
-          message: `${product.name} has been added to your cart.`,
-        }),
-      );
-    } catch (error) {
-      console.error("Failed to add item to cart:", error);
-      dispatch(
-        addToast({
-          type: "error",
-          title: "Error",
-          message: "Failed to add item to cart. Please try again.",
-        }),
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    setQuantity(Math.max(1, Math.min(10, value)));
   };
 
   // Calculate average rating
@@ -106,6 +61,29 @@ export function ProductDetail({ product }: ProductDetailProps) {
     ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
       product.reviews.length
     : 0;
+
+  // Ensure product.category has a slug, not id, without using 'any'
+  let categoryWithSlug: { name: string; slug: string } | undefined = undefined;
+  if (product.category) {
+    if (
+      "slug" in product.category &&
+      typeof product.category.slug === "string"
+    ) {
+      categoryWithSlug = {
+        name: product.category.name,
+        slug: product.category.slug,
+      };
+    } else if (
+      "id" in product.category &&
+      typeof (product.category as { id?: string }).id === "string"
+    ) {
+      categoryWithSlug = {
+        name: product.category.name,
+        slug: (product.category as { id: string }).id,
+      };
+    }
+  }
+  const productWithSlug = { ...product, category: categoryWithSlug };
 
   return (
     <div className="container py-10">
@@ -265,14 +243,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Actions */}
           <div className="flex gap-4">
-            <Button
-              onClick={handleAddToCart}
+            <AddToCartButton
+              product={productWithSlug}
+              quantity={quantity}
+              variantId={selectedVariant?.id}
+              size="default"
               className="flex-1 gap-2 sm:min-w-[200px] sm:flex-none"
-              disabled={isLoading}
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Add to Cart
-            </Button>
+            />
             <Button variant="outline" size="icon">
               <Heart className="h-4 w-4" />
               <span className="sr-only">Add to wishlist</span>

@@ -1,23 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+// ...existing code...
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@prisma/client";
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+// ...existing code...
 import { Badge } from "@/components/ui/badge";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { addCartItem } from "@/lib/redux/features/cartSlice";
-import { addToast } from "@/lib/redux/features/uiSlice";
-import { addToCart } from "@/lib/actions/cart-actions";
+import { AddToCartButton } from "@/components/ui/add-to-cart-button";
 import Image from "next/image";
 
 interface ProductCardProps {
   product: Product & {
-    category?: { name: string; id: string } | null;
+    category?: { name: string; slug: string } | null;
   };
   variant?: "default" | "compact";
 }
@@ -26,48 +23,30 @@ export function ProductCard({
   product,
   variant = "default",
 }: ProductCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useAppDispatch();
-
-  const handleAddToCart = async () => {
-    setIsLoading(true);
-    try {
-      // Add to server-side cart
-      await addToCart(product.id, 1);
-
-      // Update client-side cart state for immediate UI update
-      dispatch(
-        addCartItem({
-          id: `temp-${Date.now()}`, // Will be replaced on next refresh
-          productId: product.id,
-          quantity: 1,
-          product: product,
-        }),
-      );
-
-      // Show success notification
-      dispatch(
-        addToast({
-          type: "success",
-          title: "Added to cart",
-          message: `${product.name} has been added to your cart.`,
-        }),
-      );
-    } catch (error) {
-      console.error("Failed to add item to cart:", error);
-      dispatch(
-        addToast({
-          type: "error",
-          title: "Error",
-          message: "Failed to add item to cart. Please try again.",
-        }),
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const isCompact = variant === "compact";
+
+  // Ensure product.category has a slug, not id, without using 'any'
+  let categoryWithSlug: { name: string; slug: string } | undefined = undefined;
+  if (product.category) {
+    if (
+      "slug" in product.category &&
+      typeof product.category.slug === "string"
+    ) {
+      categoryWithSlug = {
+        name: product.category.name,
+        slug: product.category.slug,
+      };
+    } else if (
+      "id" in product.category &&
+      typeof (product.category as { id?: string }).id === "string"
+    ) {
+      categoryWithSlug = {
+        name: product.category.name,
+        slug: (product.category as { id: string }).id,
+      };
+    }
+  }
+  const productWithSlug = { ...product, category: categoryWithSlug };
 
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
@@ -90,11 +69,11 @@ export function ProductCard({
       </Link>
       <CardContent className={isCompact ? "p-2" : "p-4"}>
         <div className="space-y-1">
-          {product.category && (
+          {productWithSlug.category && (
             <p
               className={`text-muted-foreground ${isCompact ? "text-xs" : "text-sm"}`}
             >
-              {product.category.name}
+              {productWithSlug.category.name}
             </p>
           )}
           <Link href={`/product/${product.slug}`} className="group">
@@ -122,18 +101,26 @@ export function ProductCard({
             </Badge>
           )}
         </div>
-        <Button
-          variant="outline"
+        <AddToCartButton
+          product={productWithSlug}
           size={isCompact ? "sm" : "default"}
-          onClick={handleAddToCart}
-          disabled={isLoading}
-          className="hover:bg-primary hover:text-primary-foreground transition-colors"
+          className={
+            "hover:bg-primary hover:text-primary-foreground transition-colors" +
+            (isCompact ? "" : " w-full gap-2")
+          }
         >
-          <ShoppingCart
-            className={`${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"} mr-2`}
-          />
-          {isCompact ? "Add" : "Add to cart"}
-        </Button>
+          {isCompact ? (
+            <>
+              <ShoppingCart className="mr-2 h-3.5 w-3.5" />
+              Add
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Add to cart
+            </>
+          )}
+        </AddToCartButton>
       </CardFooter>
     </Card>
   );

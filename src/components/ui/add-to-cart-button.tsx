@@ -7,21 +7,28 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { addCartItem } from "@/lib/redux/features/cartSlice";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { addToCart } from "@/lib/actions/cart-actions";
+
 import type { Product } from "@prisma/client";
 
-interface ProductCardButtonProps {
-  productId: string;
-  productName: string;
+interface AddToCartButtonProps {
   product: Product & {
     category?: { name: string; slug: string } | null;
   };
+  quantity?: number;
+  variantId?: string;
+  size?: "sm" | "default";
+  className?: string;
+  children?: React.ReactNode;
 }
 
 export function AddToCartButton({
-  productId,
-  productName,
   product,
-}: ProductCardButtonProps) {
+  quantity = 1,
+  variantId,
+  size = "sm",
+  className = "w-full gap-2",
+  children,
+}: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
 
@@ -29,15 +36,16 @@ export function AddToCartButton({
     setIsLoading(true);
     try {
       // Add to server-side cart
-      await addToCart(productId, 1);
+      await addToCart(product.id, quantity, variantId);
 
       // Update client-side cart state for immediate UI update
       dispatch(
         addCartItem({
-          id: `temp-${Date.now()}`, // Will be replaced on next refresh
-          productId: productId,
-          quantity: 1,
-          product: product,
+          id: `temp-${Date.now()}`,
+          productId: product.id,
+          variantId,
+          quantity,
+          product,
         }),
       );
 
@@ -46,7 +54,7 @@ export function AddToCartButton({
         addToast({
           type: "success",
           title: "Added to cart",
-          message: `${productName} has been added to your cart.`,
+          message: `${product.name} has been added to your cart.`,
         }),
       );
     } catch (error) {
@@ -65,13 +73,13 @@ export function AddToCartButton({
 
   return (
     <Button
-      size="sm"
-      className="w-full gap-2"
+      size={size}
+      className={className}
       onClick={handleAddToCart}
       disabled={isLoading}
     >
       <ShoppingCart className="h-4 w-4" />
-      Add to Cart
+      {children || "Add to Cart"}
     </Button>
   );
 }
