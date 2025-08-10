@@ -110,7 +110,7 @@ export default async function CategoryPage({
   });
 
   return (
-    <div className="container px-5 py-8">
+    <div className="flex w-full flex-col items-center px-5 py-8">
       {/* Breadcrumbs */}
       <div className="text-muted-foreground mb-6 flex items-center text-sm">
         <Link href="/" className="hover:text-foreground">
@@ -153,8 +153,8 @@ export default async function CategoryPage({
           fill
           className="object-cover"
         />
-        <div className="from-background/90 to-background/40 absolute inset-0 flex items-center bg-gradient-to-r px-5">
-          <div className="container">
+        <div className="from-background/90 to-background/40 absolute inset-0 flex w-full items-center bg-gradient-to-r px-5">
+          <div className="mx-auto w-full max-w-7xl px-5">
             <div className="max-w-2xl">
               <h1 className="mb-4 text-4xl font-bold">
                 {type === "projects"

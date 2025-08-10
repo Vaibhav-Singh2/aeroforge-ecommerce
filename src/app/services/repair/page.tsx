@@ -92,7 +92,7 @@ export default function RepairServicesPage() {
   };
 
   return (
-    <div className="container mx-auto px-5 py-10">
+    <div className="flex w-full flex-col items-center px-5 py-10">
       <h1 className="mb-6 text-3xl font-bold">Drone & RC Repair Services</h1>
 
       <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">

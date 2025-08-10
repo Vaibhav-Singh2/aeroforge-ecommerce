@@ -131,7 +131,7 @@ export default function PrintingServicesPage() {
   };
 
   return (
-    <div className="container mx-auto px-5 py-10">
+    <div className="flex w-full flex-col items-center px-5 py-10">
       <h1 className="mb-6 text-3xl font-bold">3D Printing Services</h1>
 
       <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">

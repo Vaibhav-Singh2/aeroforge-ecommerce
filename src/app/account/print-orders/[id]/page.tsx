@@ -119,7 +119,7 @@ export default async function PrintOrderDetailPage({
     const postProcessing = order.postProcessing || [];
 
     return (
-      <div className="container max-w-4xl py-10">
+      <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-10">
         <div className="mb-6">
           <Button
             variant="ghost"

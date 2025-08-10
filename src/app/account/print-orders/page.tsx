@@ -99,7 +99,7 @@ export default async function PrintOrdersPage() {
   const printOrders = await getUserPrintOrders();
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">3D Print Orders</h1>
         <Button asChild>
