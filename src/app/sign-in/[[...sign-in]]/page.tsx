@@ -4,10 +4,10 @@ import { ChevronLeft } from "lucide-react";
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-[60vh] w-full flex-col items-center justify-center py-10">
-      <div className="relative mx-auto flex w-full max-w-md flex-col items-center justify-center">
-        <div className="grid w-full gap-6">
-          <div className="relative flex w-full justify-center">
+    <div className="container my-10 flex w-full flex-col items-center justify-center">
+      <div className="mx-auto flex flex-col justify-center space-y-6">
+        <div className="grid gap-6">
+          <div className="relative flex justify-center">
             <div className="absolute top-0 left-0">
               <Link
                 href="/"
@@ -17,7 +17,7 @@ export default function SignInPage() {
                 Back to home
               </Link>
             </div>
-            <div className="mt-10 flex w-full justify-center">
+            <div className="mx-auto mt-10">
               <SignIn
                 routing="path"
                 path="/sign-in"

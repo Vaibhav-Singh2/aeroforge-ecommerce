@@ -13,7 +13,7 @@ import {
 
 export default function ServicesPage() {
   return (
-    <div className="flex w-full flex-col items-center px-5 py-10">
+    <div className="container mx-auto px-5 py-10">
       <h1 className="mb-8 text-center text-4xl font-bold">Our Services</h1>
       <p className="text-muted-foreground mx-auto mb-12 max-w-3xl text-center text-lg">
         We offer professional repair services for drones and RC vehicles, as

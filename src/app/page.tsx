@@ -13,14 +13,14 @@ import { ServicesSection } from "@/components/sections/services-section";
 
 export default async function HomePage() {
   return (
-    <div className="flex w-full flex-col justify-center gap-20 *:px-5">
+    <div className="flex flex-col justify-center gap-20 *:px-5">
       <HeroSection />
       <CategoryShowcase />
       <FeaturedProducts />
       <ServicesSection />
 
-      <section className="bg-muted/30 w-full py-16">
-        <div className="mx-auto w-full max-w-7xl px-5">
+      <section className="bg-muted/30 py-16">
+        <div className="container">
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold">
               {`Why Choose Anubhav Projects's Lab?`}
@@ -108,8 +108,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="w-full py-8">
-        <div className="mx-auto mb-12 max-w-7xl px-5 text-center">
+      <section className="container py-8">
+        <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold">From Our Blog</h2>
           <p className="text-muted-foreground mx-auto max-w-2xl">
             Learn more about drones, flying techniques, and industry news
@@ -163,8 +163,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-primary text-primary-foreground w-full py-16">
-        <div className="mx-auto w-full max-w-7xl px-5">
+      <section className="bg-primary text-primary-foreground py-16">
+        <div className="container">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div>
               <h2 className="mb-2 text-3xl font-bold">Join Our Newsletter</h2>

@@ -51,17 +51,12 @@ async function createProducts(countPerCategory: number = 1) {
   let counter = 0;
   for (const category of categories) {
     for (let i = 0; i < countPerCategory; i++) {
-      const name = faker.commerce.productName();
-      const baseSlug = faker.helpers.slugify(name).toLowerCase();
-      let slug = baseSlug;
-      // Ensure slug uniqueness
-      while (await prisma.product.findUnique({ where: { slug } })) {
-        slug = `${baseSlug}-${faker.string.alphanumeric(4).toLowerCase()}`;
-      }
       const product = await prisma.product.create({
         data: {
-          name,
-          slug,
+          name: faker.commerce.productName(),
+          slug: faker.helpers
+            .slugify(faker.commerce.productName())
+            .toLowerCase(),
           description: faker.lorem.sentence(),
           images: [
             faker.image.urlPicsumPhotos(),

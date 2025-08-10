@@ -1,23 +1,17 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, SlidersHorizontal, ChevronRight } from "lucide-react";
+import { Heart, ChevronRight } from "lucide-react";
 
 // Import the client component
 import { ClientAddToCartButton } from "@/components/ui/category-add-to-cart";
+import { CategoryMobileSelect } from "@/components/ui/category-mobile-select";
 
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SortDropdown } from "@/components/ui/sort-dropdown";
 import { PaginationControl } from "@/components/ui/pagination-control";
 import prisma from "@/lib/prisma";
@@ -28,7 +22,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: "projects" | "parts-and-accessories" }>;
-  searchParams: Promise<{ page?: string; sort?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string; q?: string }>;
 }) {
   const [type, category] = (await params).slug;
   const awaitedSearchParams = await searchParams;
@@ -37,6 +31,9 @@ export default async function CategoryPage({
     : 1;
   const itemsPerPage = 15;
   const sortOption = awaitedSearchParams.sort || "newest";
+
+  // Search query from URL
+  const searchQuery = awaitedSearchParams.q || "";
 
   if (type !== "projects" && type !== "parts-and-accessories") {
     notFound();
@@ -81,8 +78,16 @@ export default async function CategoryPage({
     where: {
       category: {
         type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
-        slug: category || undefined,
+        ...(category ? { slug: category } : {}),
       },
+      ...(searchQuery
+        ? {
+            OR: [
+              { name: { contains: searchQuery, mode: "insensitive" } },
+              { description: { contains: searchQuery, mode: "insensitive" } },
+            ],
+          }
+        : {}),
     },
   });
 
@@ -93,8 +98,16 @@ export default async function CategoryPage({
     where: {
       category: {
         type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
-        slug: category || undefined,
+        ...(category ? { slug: category } : {}),
       },
+      ...(searchQuery
+        ? {
+            OR: [
+              { name: { contains: searchQuery, mode: "insensitive" } },
+              { description: { contains: searchQuery, mode: "insensitive" } },
+            ],
+          }
+        : {}),
     },
     include: {
       category: {
@@ -112,20 +125,17 @@ export default async function CategoryPage({
   return (
     <div className="flex w-full flex-col items-center px-5 py-8">
       {/* Breadcrumbs */}
-      <div className="text-muted-foreground mb-6 flex items-center text-sm">
+      <div className="text-muted-foreground mx-auto mb-6 flex w-full items-center text-sm">
         <Link href="/" className="hover:text-foreground">
           Home
         </Link>
         <ChevronRight className="mx-1 h-4 w-4" />
-        <Link
-          className={!category ? "text-foreground" : "text-muted-foreground"}
-          href={`/category/${type}`}
-        >
+        <Link className="hover:text-foreground" href={`/category/${type}`}>
           {type === "projects"
             ? "Ready Made Projects"
             : "Parts and Accessories"}
         </Link>
-        {category && (
+        {category ? (
           <>
             <ChevronRight className="mx-1 h-4 w-4" />
             <Link
@@ -135,13 +145,17 @@ export default async function CategoryPage({
               {categoryList.find((cat) => cat.slug === category)?.name}
             </Link>
           </>
+        ) : (
+          <>
+            <ChevronRight className="mx-1 h-4 w-4" />
+            <span className="text-foreground">All</span>
+          </>
         )}
       </div>
 
       {/* Header */}
-      <div className="relative mb-8 h-[300px] overflow-hidden rounded-lg">
+      <div className="bg-muted relative mb-8 h-48 w-full overflow-hidden rounded-lg sm:h-64 md:h-[300px]">
         <Image
-          // TODO: Replace with dynamic image based on category
           src={
             "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
           }
@@ -152,16 +166,17 @@ export default async function CategoryPage({
           }
           fill
           className="object-cover"
+          priority
         />
-        <div className="from-background/90 to-background/40 absolute inset-0 flex w-full items-center bg-gradient-to-r px-5">
-          <div className="mx-auto w-full max-w-7xl px-5">
-            <div className="max-w-2xl">
-              <h1 className="mb-4 text-4xl font-bold">
+        <div className="from-background/90 to-background/40 absolute inset-0 flex min-h-[6rem] w-full items-center bg-gradient-to-r px-2 sm:min-h-0 sm:px-5">
+          <div className="mx-auto w-full max-w-7xl px-2 sm:px-5">
+            <div className="max-w-2xl py-4 sm:py-0">
+              <h1 className="mb-2 text-2xl font-bold break-words sm:mb-4 sm:text-4xl">
                 {type === "projects"
                   ? "Ready Made Projects"
                   : "Parts and Accessories"}
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-sm sm:text-lg">
                 {
                   "Explore our collection of ready-made projects, perfect for hobbyists and professionals alike. From DIY electronics to robotics, find everything you need to kickstart your next project."
                 }
@@ -171,7 +186,7 @@ export default async function CategoryPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+      <div className="grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-4">
         {/* Filters Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-6">
@@ -179,6 +194,16 @@ export default async function CategoryPage({
             <div className="max-lg:hidden">
               <h3 className="mb-3 font-medium">Categories</h3>
               <div className="space-y-1">
+                <Link
+                  href={`/category/${type}`}
+                  className={`hover:bg-muted flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors ${
+                    !category
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  All {` (${totalItems})`}
+                </Link>
                 {categoryList.map((cat) => (
                   <Link
                     key={cat.id}
@@ -196,26 +221,12 @@ export default async function CategoryPage({
             </div>
 
             {/* Categories (Mobile Only) */}
-            <div className="lg:hidden">
-              <h3 className="mb-3 font-medium">Categories</h3>
-              <Select defaultValue={category || "all"}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <Link href={`/category/${type}`}>
-                    <SelectItem value="all">All Categories</SelectItem>
-                  </Link>
-                  {categoryList.map((cat) => (
-                    <Link key={cat.id} href={`/category/${type}/${cat.slug}`}>
-                      <SelectItem key={cat.id} value={cat.slug}>
-                        {cat.name} ({cat._count.products})
-                      </SelectItem>
-                    </Link>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <CategoryMobileSelect
+              type={type}
+              category={category}
+              categoryList={categoryList}
+              totalItems={totalItems}
+            />
             <Separator />
           </div>
         </div>
@@ -225,10 +236,6 @@ export default async function CategoryPage({
           {/* Sorting and View Options */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                Filters
-              </Button>{" "}
               <p className="text-muted-foreground text-sm">
                 Showing{" "}
                 <span className="text-foreground font-medium">
@@ -248,6 +255,31 @@ export default async function CategoryPage({
               category={category}
             />
           </div>
+
+          {/* Search Box */}
+          <div className="mb-8 w-full max-w-7xl">
+            <form
+              method="get"
+              className="flex flex-col items-stretch gap-2 sm:flex-row"
+              action=""
+            >
+              <input
+                type="text"
+                name="q"
+                defaultValue={searchQuery}
+                placeholder={`Search in ${type === "projects" ? "Ready Made Projects" : "Parts and Accessories"}`}
+                className="border-input bg-background focus:border-primary focus:ring-primary w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:ring-1 focus:outline-none"
+                autoComplete="off"
+              />
+              <button
+                type="submit"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium shadow focus:outline-none"
+              >
+                Search
+              </button>
+            </form>
+          </div>
+
           {/* Products */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (

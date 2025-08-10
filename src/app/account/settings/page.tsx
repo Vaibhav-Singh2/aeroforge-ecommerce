@@ -14,7 +14,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex w-full flex-col items-center px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center gap-3">
         <Button
           variant="ghost"
