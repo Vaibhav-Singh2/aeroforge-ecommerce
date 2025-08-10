@@ -11,11 +11,5 @@ export function ClientAddToCartButton({
     category?: { name: string; slug: string } | null;
   };
 }) {
-  return (
-    <AddToCartButton
-      productId={product.id}
-      productName={product.name}
-      product={product}
-    />
-  );
+  return <AddToCartButton product={product} />;
 }
