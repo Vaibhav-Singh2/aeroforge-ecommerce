@@ -7,8 +7,6 @@ import { Product, ProductVariant, Category, Review } from "@prisma/client";
 import { AddToCartButton } from "@/components/ui/add-to-cart-button";
 import {
   ChevronRight,
-  // ShoppingCart,
-  Heart,
   Star,
   Share2,
   Truck,
@@ -86,7 +84,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const productWithSlug = { ...product, category: categoryWithSlug };
 
   return (
-    <div className="container py-10 px-5">
+    <div className="container px-5 py-10">
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center text-sm">
         <Link href="/" className="text-muted-foreground hover:text-foreground">
@@ -250,11 +248,41 @@ export function ProductDetail({ product }: ProductDetailProps) {
               size="default"
               className="flex-1 gap-2 sm:min-w-[200px] sm:flex-none"
             />
-            <Button variant="outline" size="icon">
-              <Heart className="h-4 w-4" />
-              <span className="sr-only">Add to wishlist</span>
-            </Button>
-            <Button variant="outline" size="icon">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={async () => {
+                const shareUrl =
+                  typeof window !== "undefined" ? window.location.href : "";
+                const shareData = {
+                  title: product.name,
+                  text:
+                    product.description?.slice(0, 100) ||
+                    "Check out this product!",
+                  url: shareUrl,
+                };
+                if (navigator.share) {
+                  try {
+                    await navigator.share(shareData);
+                  } catch (err) {
+                    console.error("Error sharing:", err);
+                    alert("Failed to share product");
+                  }
+                } else if (navigator.clipboard) {
+                  try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    // Optionally show a toast/alert
+                    alert("Link copied to clipboard!");
+                  } catch (err) {
+                    console.error("Error copying link:", err);
+                    alert("Failed to copy link");
+                  }
+                } else {
+                  alert("Sharing not supported on this device.");
+                }
+              }}
+              aria-label="Share"
+            >
               <Share2 className="h-4 w-4" />
               <span className="sr-only">Share</span>
             </Button>
