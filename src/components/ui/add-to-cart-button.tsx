@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -31,8 +32,47 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
+  const { isSignedIn } = useUser();
+  const clerk = useClerk();
 
   const handleAddToCart = async () => {
+    if (!isSignedIn) {
+      // Open Clerk sign-in/sign-up modal with redirect to current URL
+      const currentUrl =
+        typeof window !== "undefined" ? window.location.href : undefined;
+      const modalOptions:
+        | { afterSignInUrl: string; afterSignUpUrl: string }
+        | undefined = currentUrl
+        ? { afterSignInUrl: currentUrl, afterSignUpUrl: currentUrl }
+        : undefined;
+      if (clerk && typeof clerk.openSignIn === "function") {
+        clerk.openSignIn(modalOptions);
+      } else if (
+        typeof window !== "undefined" &&
+        typeof (
+          window as unknown as {
+            Clerk?: {
+              openSignIn?: (opts?: {
+                afterSignInUrl: string;
+                afterSignUpUrl: string;
+              }) => void;
+            };
+          }
+        ).Clerk?.openSignIn === "function"
+      ) {
+        (
+          window as unknown as {
+            Clerk: {
+              openSignIn: (opts?: {
+                afterSignInUrl: string;
+                afterSignUpUrl: string;
+              }) => void;
+            };
+          }
+        ).Clerk.openSignIn(modalOptions);
+      }
+      return;
+    }
     setIsLoading(true);
     try {
       // Add to server-side cart

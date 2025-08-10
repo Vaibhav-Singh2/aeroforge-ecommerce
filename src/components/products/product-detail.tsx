@@ -86,7 +86,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const productWithSlug = { ...product, category: categoryWithSlug };
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-5">
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center text-sm">
         <Link href="/" className="text-muted-foreground hover:text-foreground">
