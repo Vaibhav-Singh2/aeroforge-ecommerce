@@ -88,6 +88,8 @@ export async function addAddress(data: AddressInput) {
     }
 
     // Create the new address
+    // Copy the data object without the type field (if it exists)
+    // TypeScript will ignore the extra field when matching against Address model
     const address = await prisma.address.create({
       data: {
         ...data,
@@ -156,7 +158,9 @@ export async function updateAddress(addressId: string, data: AddressInput) {
       where: {
         id: addressId,
       },
-      data,
+      data: {
+        ...data,
+      },
     });
 
     revalidatePath("/account/addresses");

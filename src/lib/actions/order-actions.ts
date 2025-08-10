@@ -20,6 +20,7 @@ type CreateOrderInput = {
   taxAmount: number;
   totalAmount: number;
   customerNotes?: string;
+  paymentMethod?: string; // Add payment method field
 };
 
 type GetOrderInput = {
@@ -106,10 +107,14 @@ export async function createOrder(input: CreateOrderInput) {
           shippingAmount: input.shippingAmount,
           totalAmount: input.totalAmount,
           status: OrderStatus.PENDING,
-          paymentStatus: PaymentStatus.PENDING,
+          paymentStatus:
+            input.paymentMethod === "cod"
+              ? PaymentStatus.PAID
+              : PaymentStatus.PENDING,
           addressId: shippingAddress.id,
           shippingMethod: input.shippingMethod,
           customerNotes: input.customerNotes,
+          paymentMethod: input.paymentMethod || "cod", // Save payment method
           items: {
             create: orderItems,
           },

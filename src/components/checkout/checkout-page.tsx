@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShoppingBag, ChevronLeft, CreditCard, Check } from "lucide-react";
@@ -9,6 +9,7 @@ import { addToast } from "@/lib/redux/features/uiSlice";
 import { clearCart } from "@/lib/redux/features/cartSlice";
 import { getUserCartItems } from "@/lib/actions/cart-actions";
 import { createOrder } from "@/lib/actions/order-actions";
+import { useUser } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,8 @@ import { CheckoutPaymentForm } from "./checkout-payment-form";
 import { CheckoutOrderSummary } from "./checkout-order-summary";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { RazorpayOptions, RazorpaySuccessResponse } from "@/lib/types/razorpay";
+import { RazorpayScriptLoader } from "../providers/razorpay-script-provider";
 
 // Define the checkout steps
 const STEPS = {
@@ -48,6 +51,7 @@ const SHIPPING_OPTIONS = [
 export function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { user: clerkUser } = useUser();
   const { items } = useAppSelector((state) => state.cart);
   const { addresses } = useAppSelector((state) => state.user);
   const [activeStep, setActiveStep] = useState(STEPS.ADDRESS);
@@ -55,6 +59,8 @@ export function CheckoutPage() {
   const [cartItems, setCartItems] = useState(items);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [shippingMethod, setShippingMethod] = useState(SHIPPING_OPTIONS[0].id);
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [currentOrder, setCurrentOrder] = useState<{id: string, orderNumber: string} | null>(null);
 
   // Calculate cart totals
   const subtotal = cartItems.reduce(
@@ -100,6 +106,11 @@ export function CheckoutPage() {
   // Handle shipping method selection
   const handleShippingMethodChange = (value: string) => {
     setShippingMethod(value);
+  };
+  
+  // Handle payment method selection
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value);
   };
 
   // Move to the next step
@@ -156,16 +167,140 @@ export function CheckoutPage() {
     }
   };
 
+  // Handle successful Razorpay payment
+  const handlePaymentSuccess = useCallback(async (response: RazorpaySuccessResponse) => {
+    try {
+      if (!currentOrder) return;
+      
+      // Verify payment and update order status
+      const res = await fetch('/api/payment/razorpay', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: currentOrder.id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+          razorpayOrderId: response.razorpay_order_id,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        // Clear the cart in Redux
+        dispatch(clearCart());
+        
+        // Show success message
+        dispatch(
+          addToast({
+            type: "success",
+            title: "Order placed successfully",
+            message: "Thank you for your order! You will receive a confirmation email shortly.",
+          }),
+        );
+        
+        // Move to confirmation step
+        setActiveStep(STEPS.CONFIRMATION);
+      } else {
+        throw new Error(data.error || "Payment verification failed");
+      }
+    } catch (error) {
+      console.error("Payment verification error:", error);
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Payment verification failed",
+          message: "There was a problem verifying your payment. Please contact support.",
+        }),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentOrder, dispatch]);
+  
+  // Initialize Razorpay checkout
+  const initializeRazorpayCheckout = useCallback(async (orderId: string, orderNumber: string) => {
+    try {
+      // Create Razorpay order
+      const res = await fetch('/api/payment/razorpay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId,
+          amount: total,
+          receipt: orderNumber,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || "Failed to create payment");
+      }
+      
+      // Initialize Razorpay checkout
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+        amount: data.data.amount,
+        currency: "INR",
+        name: "ProjectsLab E-commerce",
+        description: `Order #${data.data.receipt}`,
+        order_id: data.data.id,
+        handler: handlePaymentSuccess,
+        prefill: {
+          name: clerkUser?.fullName || '',
+          email: clerkUser?.primaryEmailAddress?.emailAddress || '',
+          contact: clerkUser?.phoneNumbers?.[0]?.phoneNumber || '',
+        },
+        notes: {
+          order_id: orderId,
+        },
+        theme: {
+          color: '#6366F1', // Indigo color from Tailwind
+        },
+        modal: {
+          ondismiss: () => {
+            setIsLoading(false);
+            dispatch(
+              addToast({
+                type: "warning",
+                title: "Payment cancelled",
+                message: "Your payment was cancelled. You can try again from your orders page.",
+              }),
+            );
+          },
+        },
+      };
+      
+      const razorpay = new window.Razorpay!(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Failed to initialize Razorpay:", error);
+      setIsLoading(false);
+      dispatch(
+        addToast({
+          type: "error",
+          title: "Payment initialization failed",
+          message: "There was a problem setting up the payment. Please try again.",
+        }),
+      );
+    }
+  }, [total, dispatch, handlePaymentSuccess, clerkUser]);
+
   // Handle placing an order
   const handlePlaceOrder = async () => {
-    if (!selectedAddress || !shippingMethod || cartItems.length === 0) {
+    if (!selectedAddress || !shippingMethod || cartItems.length === 0 || !paymentMethod) {
       return;
     }
 
     setIsLoading(true);
     try {
       // Create order on the server
-      await createOrder({
+      const order = await createOrder({
         shippingAddressId: selectedAddress,
         shippingMethod,
         items: cartItems.map((item) => ({
@@ -177,34 +312,44 @@ export function CheckoutPage() {
         shippingAmount: shippingCost,
         taxAmount: tax,
         totalAmount: total,
+        paymentMethod, // Add payment method
+      });
+      
+      // Store current order details
+      setCurrentOrder({
+        id: order.id,
+        orderNumber: order.orderNumber,
       });
 
-      // Clear the cart in Redux
-      dispatch(clearCart());
-
-      // Show success message
-      dispatch(
-        addToast({
-          type: "success",
-          title: "Order placed successfully",
-          message:
-            "Thank you for your order! You will receive a confirmation email shortly.",
-        }),
-      );
-
-      // Move to confirmation step
-      setActiveStep(STEPS.CONFIRMATION);
+      if (paymentMethod === 'razorpay') {
+        // Process payment via Razorpay
+        await initializeRazorpayCheckout(order.id, order.orderNumber);
+      } else {
+        // For COD, just proceed to confirmation
+        dispatch(clearCart());
+        
+        // Show success message
+        dispatch(
+          addToast({
+            type: "success",
+            title: "Order placed successfully",
+            message: "Thank you for your order! You will receive a confirmation email shortly.",
+          }),
+        );
+        
+        // Move to confirmation step
+        setActiveStep(STEPS.CONFIRMATION);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Failed to place order:", error);
       dispatch(
         addToast({
           type: "error",
           title: "Failed to place order",
-          message:
-            "There was a problem processing your order. Please try again.",
+          message: "There was a problem processing your order. Please try again.",
         }),
       );
-    } finally {
       setIsLoading(false);
     }
   };
@@ -232,7 +377,7 @@ export function CheckoutPage() {
   // Render confirmation step
   if (activeStep === STEPS.CONFIRMATION) {
     return (
-      <div className="container max-w-4xl px-5 py-16">
+      <div className="max-w-4xl px-5 py-16 mx-auto">
         <Card>
           <CardContent className="flex flex-col items-center pt-6 pb-16">
             <div className="mb-4 rounded-full bg-green-100 p-3">
@@ -262,6 +407,9 @@ export function CheckoutPage() {
   return (
     <div className="container px-5 py-10">
       <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
+      
+      {/* Load Razorpay script */}
+      <RazorpayScriptLoader />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main checkout content */}
@@ -348,7 +496,10 @@ export function CheckoutPage() {
 
             {/* Payment step */}
             <TabsContent value={STEPS.PAYMENT}>
-              <CheckoutPaymentForm />
+              <CheckoutPaymentForm 
+                paymentMethod={paymentMethod}
+                onPaymentMethodChange={handlePaymentMethodChange}
+              />
             </TabsContent>
           </Tabs>
 

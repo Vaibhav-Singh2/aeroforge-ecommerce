@@ -1,59 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Calendar, Info } from "lucide-react";
-
+import { CreditCard, Landmark } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-export function CheckoutPaymentForm() {
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvv, setCvv] = useState("");
+interface CheckoutPaymentFormProps {
+  paymentMethod: string;
+  onPaymentMethodChange: (method: string) => void;
+}
 
-  // Format card number with spaces
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\s+/g, "").replace(/[^0-9]/g, "");
-    let formattedValue = "";
-
-    for (let i = 0; i < value.length; i++) {
-      if (i > 0 && i % 4 === 0) {
-        formattedValue += " ";
-      }
-      formattedValue += value[i];
-    }
-
-    if (formattedValue.length <= 19) {
-      // 16 digits + 3 spaces
-      setCardNumber(formattedValue);
-    }
-  };
-
-  // Format expiry date (MM/YY)
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
-    let formattedValue = value;
-
-    if (value.length > 2) {
-      formattedValue = value.slice(0, 2) + "/" + value.slice(2, 4);
-    }
-
-    if (formattedValue.length <= 5) {
-      // MM/YY format
-      setExpiryDate(formattedValue);
-    }
-  };
-
-  // Limit CVV to 3-4 digits
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
-    if (value.length <= 4) {
-      setCvv(value);
-    }
-  };
-
+export function CheckoutPaymentForm({
+  paymentMethod,
+  onPaymentMethodChange,
+}: CheckoutPaymentFormProps) {
   return (
     <Card>
       <CardHeader>
@@ -61,65 +21,53 @@ export function CheckoutPaymentForm() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="card-number">Card Number</Label>
-            <div className="relative">
-              <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
-              <Input
-                id="card-number"
-                placeholder="1234 5678 9012 3456"
-                className="pl-10"
-                value={cardNumber}
-                onChange={handleCardNumberChange}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="card-name">Cardholder Name</Label>
-            <Input
-              id="card-name"
-              placeholder="John Doe"
-              value={cardName}
-              onChange={(e) => setCardName(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="expiry">Expiry Date</Label>
-              <div className="relative">
-                <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
-                <Input
-                  id="expiry"
-                  placeholder="MM/YY"
-                  className="pl-10"
-                  value={expiryDate}
-                  onChange={handleExpiryChange}
-                />
-              </div>
+          <RadioGroup
+            value={paymentMethod}
+            onValueChange={onPaymentMethodChange}
+            className="space-y-3"
+          >
+            <div className="flex items-center space-x-2 rounded-md border p-4">
+              <RadioGroupItem value="razorpay" id="razorpay" />
+              <Label
+                htmlFor="razorpay"
+                className="flex flex-1 cursor-pointer items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Razorpay</div>
+                    <div className="text-muted-foreground text-sm">
+                      Pay securely with credit/debit card, UPI, or bank transfer
+                    </div>
+                  </div>
+                </div>
+              </Label>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cvv">CVV</Label>
-              <div className="relative">
-                <Info className="text-muted-foreground absolute top-2.5 left-3 h-5 w-5" />
-                <Input
-                  id="cvv"
-                  placeholder="123"
-                  className="pl-10"
-                  value={cvv}
-                  onChange={handleCvvChange}
-                  type="password"
-                />
-              </div>
+            <div className="flex items-center space-x-2 rounded-md border p-4">
+              <RadioGroupItem value="cod" id="cod" />
+              <Label
+                htmlFor="cod"
+                className="flex flex-1 cursor-pointer items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <Landmark className="h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Cash on Delivery</div>
+                    <div className="text-muted-foreground text-sm">
+                      Pay with cash when your order is delivered
+                    </div>
+                  </div>
+                </div>
+              </Label>
             </div>
-          </div>
+          </RadioGroup>
 
           <div className="bg-muted/50 text-muted-foreground rounded-lg p-4 text-sm">
             <p>
-              This is a demo store. No real payments will be processed. Use any
-              valid-looking credit card information.
+              {paymentMethod === "razorpay"
+                ? "You'll be redirected to Razorpay's secure payment page to complete your purchase."
+                : "You can pay in cash when your order is delivered."}
             </p>
           </div>
         </div>

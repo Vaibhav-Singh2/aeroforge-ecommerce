@@ -39,7 +39,7 @@ export function CheckoutAddressForm({
     try {
       // Extract address data from form
       const addressData = {
-        type: formData.get("type") as "shipping" | "billing",
+        // No type field in the Address model
         firstName: formData.get("firstName") as string,
         lastName: formData.get("lastName") as string,
         company: (formData.get("company") as string) || undefined,
