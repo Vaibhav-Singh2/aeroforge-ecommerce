@@ -11,6 +11,9 @@
 ![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=for-the-badge&logo=clerk)
 ![Razorpay](https://img.shields.io/badge/Razorpay-Payment_Gateway-0C2340?style=for-the-badge&logo=razorpay)
 
+**🌐 Live Demo:** [aeroforge-labs.vercel.app](https://aeroforge-labs.vercel.app/)  
+**📁 GitHub Repo:** [github.com/Vaibhav-Singh2/aeroforge-ecommerce](https://github.com/Vaibhav-Singh2/aeroforge-ecommerce)
+
 ---
 
 ## 🚀 Overview
