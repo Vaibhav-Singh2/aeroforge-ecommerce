@@ -1,16 +1,10 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ChevronRight } from "lucide-react";
+import { Heart, ChevronRight, Star } from "lucide-react";
 
-// Import the client component
-import { ClientAddToCartButton } from "@/components/ui/category-add-to-cart";
+import { ProductCard } from "@/components/products/product-card";
 import { CategoryMobileSelect } from "@/components/ui/category-mobile-select";
-
-import { Button } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SortDropdown } from "@/components/ui/sort-dropdown";
 import { PaginationControl } from "@/components/ui/pagination-control";
@@ -43,7 +37,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: "projects" | "parts-and-accessories" }>;
-  searchParams: Promise<{ page?: string; sort?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string; q?: string; rating?: string }>;
 }) {
   const rawSlug = (await params).slug;
   let type = rawSlug[0];
@@ -56,6 +50,9 @@ export default async function CategoryPage({
   const itemsPerPage = 15;
   const sortOption = awaitedSearchParams.sort || "newest";
   const searchQuery = awaitedSearchParams.q || "";
+  const ratingFilter = awaitedSearchParams.rating
+    ? parseInt(awaitedSearchParams.rating)
+    : 0;
 
   // Resolve aliases and direct category slugs
   if (type === "drones") {
@@ -95,6 +92,7 @@ export default async function CategoryPage({
       },
     },
   });
+
   // Determine the sort order based on the sort parameter
   type OrderByOption = Record<string, "asc" | "desc">;
   let orderBy: OrderByOption = { createdAt: "desc" };
@@ -111,45 +109,42 @@ export default async function CategoryPage({
     case "featured":
       orderBy = { isBestseller: "desc" };
       break;
-    // Add other sort options as needed
   }
+
+  const whereClause: Prisma.ProductWhereInput = {
+    category: {
+      type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
+      ...(category ? { slug: category } : {}),
+    },
+    ...(searchQuery
+      ? {
+          OR: [
+            { name: { contains: searchQuery, mode: "insensitive" } },
+            { description: { contains: searchQuery, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+    ...(ratingFilter > 0
+      ? {
+          reviews: {
+            some: {
+              rating: { gte: ratingFilter },
+            },
+          },
+        }
+      : {}),
+  };
 
   // Get total count for pagination
   const totalItems = await prisma.product.count({
-    where: {
-      category: {
-        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
-        ...(category ? { slug: category } : {}),
-      },
-      ...(searchQuery
-        ? {
-            OR: [
-              { name: { contains: searchQuery, mode: "insensitive" } },
-              { description: { contains: searchQuery, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: whereClause,
   });
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const skip = (currentPage - 1) * itemsPerPage;
 
   const products: ProductItem[] = await prisma.product.findMany({
-    where: {
-      category: {
-        type: type === "projects" ? "READY_MADE_PROJECT" : "PART_AND_ACCESSORY",
-        ...(category ? { slug: category } : {}),
-      },
-      ...(searchQuery
-        ? {
-            OR: [
-              { name: { contains: searchQuery, mode: "insensitive" } },
-              { description: { contains: searchQuery, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: whereClause,
     include: {
       category: {
         select: {
@@ -265,6 +260,54 @@ export default async function CategoryPage({
               </div>
             </div>
 
+            {/* Customer Rating Filter */}
+            <div className="max-lg:hidden pt-2">
+              <h3 className="mb-2.5 font-medium text-sm">Customer Rating</h3>
+              <div className="space-y-1">
+                {[4, 3, 2].map((stars) => {
+                  const isSelected = ratingFilter === stars;
+                  const targetHref = `/category/${type}${category ? `/${category}` : ""}?sort=${sortOption}${isSelected ? "" : `&rating=${stars}`}${searchQuery ? `&q=${searchQuery}` : ""}`;
+                  return (
+                    <Link
+                      key={stars}
+                      href={targetHref}
+                      className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors ${
+                        isSelected
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex text-amber-400">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${i < stars ? "fill-amber-400" : "text-muted-foreground/30"}`}
+                            />
+                          ))}
+                        </div>
+                        <span>& Up</span>
+                      </div>
+                      {isSelected && (
+                        <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.2 rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+
+                {ratingFilter > 0 && (
+                  <Link
+                    href={`/category/${type}${category ? `/${category}` : ""}?sort=${sortOption}${searchQuery ? `&q=${searchQuery}` : ""}`}
+                    className="text-[11px] text-primary hover:underline px-2 pt-1 inline-block font-medium"
+                  >
+                    Clear Rating Filter
+                  </Link>
+                )}
+              </div>
+            </div>
+
             {/* Categories (Mobile Only) */}
             <CategoryMobileSelect
               type={type}
@@ -328,71 +371,7 @@ export default async function CategoryPage({
           {/* Products */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product: ProductItem) => (
-              <Card key={product.id} className="group overflow-hidden">
-                <div className="relative overflow-hidden">
-                  <AspectRatio ratio={1 / 1}>
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </AspectRatio>
-
-                  {/* Product badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {/* New badge - 1 week */}
-                    {product.createdAt <
-                      new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) && (
-                      <Badge className="bg-blue-600 hover:bg-blue-700">
-                        New
-                      </Badge>
-                    )}
-                    {product.isBestseller && (
-                      <Badge className="bg-amber-600 hover:bg-amber-700">
-                        Bestseller
-                      </Badge>
-                    )}
-                    {/* {product.comparePrice && (
-                      <Badge variant="secondary">Sale</Badge>
-                    )} */}
-                  </div>
-
-                  {/* Quick action buttons */}
-                  <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="rounded-full"
-                    >
-                      <Heart className="h-4 w-4" />
-                      <span className="sr-only">Add to wishlist</span>
-                    </Button>
-                  </div>
-                </div>
-                <CardContent className="pt-6">
-                  <div className="mb-1 flex items-center gap-1">
-                    <span className="text-muted-foreground text-xs">
-                      {product.category.name}
-                    </span>
-                  </div>
-                  <Link
-                    href={`/product/${product.slug}`}
-                    className="hover:underline"
-                  >
-                    <h3 className="line-clamp-1 font-medium">{product.name}</h3>
-                  </Link>
-                  <div className="mt-2 flex items-end gap-2">
-                    <span className="font-semibold">
-                      ${product.price.toFixed(2)}
-                    </span>
-                  </div>
-                </CardContent>{" "}
-                <CardFooter className="pt-0">
-                  <ClientAddToCartButton product={product} />
-                </CardFooter>
-              </Card>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
           {/* Pagination */}

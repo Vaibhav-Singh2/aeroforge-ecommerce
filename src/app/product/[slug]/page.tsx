@@ -7,6 +7,10 @@ interface ProductPageProps {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    variant?: string;
+    sku?: string;
+  }>;
 }
 
 export async function generateMetadata({
@@ -33,12 +37,24 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
   const product = await getProductBySlug((await params).slug);
 
   if (!product) {
     notFound();
   }
 
-  return <ProductDetail product={product} />;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const initialVariantId =
+    resolvedSearchParams?.variant || resolvedSearchParams?.sku;
+
+  return (
+    <ProductDetail
+      product={product}
+      initialVariantId={initialVariantId}
+    />
+  );
 }

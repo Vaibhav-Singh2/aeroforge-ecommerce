@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Product, ProductVariant, Category, Review } from "@prisma/client";
@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductReviewsSection } from "@/components/products/product-reviews-section";
 
 // Extended types for the product with its relations
 
@@ -31,6 +32,7 @@ type ProductWithRelations = Product & {
 };
 interface ProductDetailProps {
   product: ProductWithRelations;
+  initialVariantId?: string;
 }
 
 type ReviewWithUser = Review & {
@@ -41,16 +43,52 @@ type ReviewWithUser = Review & {
   };
 };
 
-export function ProductDetail({ product }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  initialVariantId,
+}: ProductDetailProps) {
+  // Determine initial variant based on prop if provided
+  const initialVariant = useMemo(() => {
+    if (!product.variants || product.variants.length === 0) return null;
+    if (initialVariantId) {
+      const match = product.variants.find(
+        (v) => v.id === initialVariantId || v.sku === initialVariantId,
+      );
+      if (match) return match;
+    }
+    return product.variants[0];
+  }, [product.variants, initialVariantId]);
+
+  const [selectedVariant, setSelectedVariant] =
+    useState<ProductVariant | null>(initialVariant);
+
   const [mainImage, setMainImage] = useState(
-    product.images && product.images.length > 0 ? product.images[0] : "",
-  );
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    product.variants && product.variants.length > 0
-      ? product.variants[0]
-      : null,
+    selectedVariant?.image ||
+      (product.images && product.images.length > 0 ? product.images[0] : ""),
   );
   const [quantity, setQuantity] = useState(1);
+
+  // Sync if initialVariant changes
+  useEffect(() => {
+    if (initialVariant) {
+      setSelectedVariant(initialVariant);
+      if (initialVariant.image) {
+        setMainImage(initialVariant.image);
+      }
+    }
+  }, [initialVariant]);
+
+  const handleSelectVariant = (variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    if (variant.image) {
+      setMainImage(variant.image);
+    }
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("variant", variant.id);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
 
   const handleQuantityChange = (value: number) => {
     setQuantity(Math.max(1, Math.min(10, value)));
@@ -87,6 +125,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
   }
   const productWithSlug = { ...product, category: categoryWithSlug };
 
+  const currentPrice = selectedVariant?.price ?? product.price;
+  const currentSku = selectedVariant?.sku || product.sku;
+  const currentStock = selectedVariant?.quantity ?? product.quantity;
+
   return (
     <div className="container px-5 py-10">
       {/* Breadcrumb */}
@@ -106,7 +148,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <ChevronRight className="text-muted-foreground mx-2 h-4 w-4" />
           </>
         )}
-        <span aria-current="page">{product.name}</span>
+        <span aria-current="page" className="truncate">{product.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -122,7 +164,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
+                className="object-cover transition-all duration-300"
                 priority
               />
             ) : (
@@ -141,8 +183,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <button
                   key={i}
                   onClick={() => setMainImage(image)}
-                  className={`overflow-hidden rounded-md border ${
-                    image === mainImage ? "ring-primary ring-2" : ""
+                  className={`overflow-hidden rounded-md border transition-all ${
+                    image === mainImage ? "ring-primary ring-2 shadow-xs" : "opacity-70 hover:opacity-100"
                   }`}
                 >
                   <AspectRatio ratio={1 / 1}>
@@ -163,8 +205,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <div className="mt-2 flex items-center gap-4">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{product.name}</h1>
+            <div className="mt-2.5 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -172,50 +214,84 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     className={`h-4 w-4 ${
                       i < Math.round(avgRating)
                         ? "fill-yellow-400 text-yellow-400"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground/30"
                     }`}
                   />
                 ))}
-                <span className="text-muted-foreground ml-2 text-sm">
+                <span className="ml-1.5 font-semibold text-foreground">
                   ({product.reviews.length}{" "}
                   {product.reviews.length === 1 ? "review" : "reviews"})
                 </span>
               </div>
-              {product.sku && (
-                <span className="text-muted-foreground text-sm">
-                  SKU: {product.sku}
+
+              {currentSku && (
+                <span className="font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border">
+                  SKU: <strong className="text-foreground">{currentSku}</strong>
+                </span>
+              )}
+
+              {currentStock > 0 ? (
+                <span className="font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                  ● In Stock ({currentStock} available)
+                </span>
+              ) : (
+                <span className="font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full border border-destructive/20">
+                  ● Out of Stock
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">
-              ₹{product.price.toFixed(2)}
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-extrabold text-foreground">
+              ₹{currentPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </span>
-            {/* You can add discount logic here */}
+            {selectedVariant && selectedVariant.price && selectedVariant.price !== product.price && (
+              <span className="text-xs text-muted-foreground">
+                (Base price: ₹{product.price.toFixed(2)})
+              </span>
+            )}
           </div>
 
-          <p className="text-muted-foreground">{product.description}</p>
+          <p className="text-muted-foreground text-sm leading-relaxed">{product.description}</p>
 
-          {/* Variants */}
+          {/* Variants Selector */}
           {product.variants && product.variants.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-medium">Options</h3>
-              <div className="flex flex-wrap gap-3">
-                {product.variants.map((variant: ProductVariant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`rounded-md border px-4 py-2 text-sm ${
-                      selectedVariant?.id === variant.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    }`}
-                  >
-                    {variant.name}
-                  </button>
-                ))}
+            <div className="space-y-3 rounded-lg border bg-muted/20 p-3.5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider">
+                  Option: <span className="text-primary font-bold">{selectedVariant?.name || "Default"}</span>
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((variant: ProductVariant) => {
+                  const isSelected = selectedVariant?.id === variant.id;
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => handleSelectVariant(variant)}
+                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs ring-2 ring-primary/30 font-semibold"
+                          : "bg-background hover:bg-muted text-foreground border-input"
+                      }`}
+                    >
+                      <span>{variant.name}</span>
+                      {variant.price && variant.price !== product.price && (
+                        <span
+                          className={`text-[11px] ${
+                            isSelected
+                              ? "text-primary-foreground/90 font-bold"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          (₹{variant.price.toLocaleString("en-IN")})
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -394,76 +470,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
               )}
             </div>
           </TabsContent>
-          <TabsContent value="reviews" className="py-6">
-            <div className="space-y-8">
-              {product.reviews && product.reviews.length > 0 ? (
-                product.reviews.map((review: ReviewWithUser) => (
-                  <div key={review.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {review.user?.imageUrl ? (
-                          <Image
-                            src={review.user.imageUrl}
-                            alt={review.user.name}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
-                            {review.user.name.charAt(0)}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium">{review.user.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < review.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    {review.title && (
-                      <h4 className="font-medium">{review.title}</h4>
-                    )}
-                    <p className="text-muted-foreground">{review.comment}</p>
-                    {review.images && review.images.length > 0 && (
-                      <div className="mt-2 flex gap-2 overflow-x-auto pb-2">
-                        {review.images.map((image: string, i: number) => (
-                          <Image
-                            key={i}
-                            src={image}
-                            alt={`Review image ${i + 1}`}
-                            width={80}
-                            height={80}
-                            className="rounded-md object-cover"
-                          />
-                        ))}
-                      </div>
-                    )}
-                    <Separator className="mt-4" />
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground">No reviews yet.</p>
-                  <Button variant="outline" className="mt-4">
-                    Write a Review
-                  </Button>
-                </div>
-              )}
-            </div>
+          <TabsContent value="reviews" className="py-2">
+            <ProductReviewsSection
+              productId={product.id}
+              productSlug={product.slug}
+              productName={product.name}
+              reviews={product.reviews || []}
+            />
           </TabsContent>
         </Tabs>
       </div>
