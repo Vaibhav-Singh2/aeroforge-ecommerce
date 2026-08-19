@@ -1128,18 +1128,25 @@ async function seedServiceOrders(users: { id: string }[]) {
         printNumber,
         userId: user.id,
         status: PrintStatus.PRINTING,
-        fileName: "gopro12_hero_mount_25deg.stl",
-        fileUrl: "https://aeroforge-labs.vercel.app/demo/gopro12_mount.stl",
-        fileSize: 4280000, // 4.28MB
+        projectName: "GoPro 12 Hero Mount 25-Degree",
+        fileUrls: ["https://aeroforge-labs.vercel.app/demo/gopro12_mount.stl"],
+        images: [IMAGES.filaments[0]],
+        quantity: 1,
         material: PrintMaterial.TPU,
         color: "Stealth Black",
         infill: 40,
         layerHeight: 0.2,
-        estimatedCost: 1250,
-        finalCost: 1250,
+        printQuality: "high",
+        estimatedWeight: 45.0,
+        estimatedTime: 210,
+        materialCost: 450,
+        laborCost: 800,
+        totalCost: 1250,
         paidAmount: 1250,
-        customerNotes: "Please print with 100% infill around the base screw holes for high crash resilience.",
-        adminNotes: "Printing on Bambu X1-Carbon with high-temp TPU profile. 3.5 hrs remaining.",
+        customerNotes:
+          "Please print with 100% infill around the base screw holes for high crash resilience.",
+        adminNotes:
+          "Printing on Bambu X1-Carbon with high-temp TPU profile. 3.5 hrs remaining.",
       },
     });
   }
