@@ -1228,11 +1228,28 @@ async function seedServiceOrders(users: { id: string }[]) {
   console.log("✅ Sample Print, Repair, and E-commerce Orders seeded.");
 }
 
+// ─── Clean Legacy Data ────────────────────────────────────────────────────────
+
+async function cleanDatabase() {
+  console.log("🧹 Purging legacy data for a clean fresh slate...");
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.productVariant.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.repairOrder.deleteMany();
+  await prisma.printOrder.deleteMany();
+  console.log("✅ Database cleared of old legacy items.\n");
+}
+
 // ─── Main Execution ──────────────────────────────────────────────────────────
 
 async function main() {
   console.log("🚀 Starting AeroForge Labs dynamic bulk database seed...\n");
 
+  await cleanDatabase();
   await seedAdmin();
   const users = await seedDemoUsers();
   await seedCategories();
