@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Plane, Mail, Globe } from "lucide-react";
+import { Mail, Globe } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { AeroForgeLogo } from "@/components/ui/logo";
 
 export function SiteFooter() {
   return (
@@ -11,11 +12,8 @@ export function SiteFooter() {
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <Plane className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold tracking-tight">
-                {"AeroForge Labs"}
-              </span>
+            <Link href="/" className="inline-block">
+              <AeroForgeLogo />
             </Link>
             <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
               Advanced e-commerce & rapid prototyping platform for high-performance

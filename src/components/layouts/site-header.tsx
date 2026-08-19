@@ -21,6 +21,7 @@ import {
 } from "@/lib/redux/features/uiSlice";
 import { openCart, type CartItem } from "@/lib/redux/features/cartSlice";
 import { openWishlist } from "@/lib/redux/features/wishlistSlice";
+import { AeroForgeLogo } from "@/components/ui/logo";
 
 export function SiteHeader() {
   const dispatch = useAppDispatch();
@@ -71,10 +72,7 @@ export function SiteHeader() {
       <div className="flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="hidden text-xl font-bold tracking-tight md:inline-block">
-              {"AeroForge Labs"}
-            </span>
-            <span className="text-xl font-bold md:hidden">{"AFL"}</span>
+            <AeroForgeLogo />
           </Link>
           <MainNav />
         </div>

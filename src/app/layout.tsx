@@ -29,20 +29,21 @@ export const metadata: Metadata = {
   title: "AeroForge Labs – Next-Gen Drones, Aeronautics & Rapid Prototyping",
   description:
     "AeroForge Labs – Advanced e-commerce and engineering hub for high-performance drones, RC planes, precision parts, on-demand 3D printing, and hardware repair.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icon.png" },
+    ],
+  },
   openGraph: {
     title: "AeroForge Labs – Next-Gen Drones, Aeronautics & Rapid Prototyping",
     description:
       "Explore high-performance drones, custom 3D printing pipelines, and expert hardware diagnostics on AeroForge Labs.",
     url: "https://aeroforge-labs.vercel.app",
     siteName: "AeroForge Labs",
-    images: [
-      {
-        url: "/public/vercel.svg",
-        width: 1200,
-        height: 630,
-        alt: "AeroForge Labs",
-      },
-    ],
     locale: "en_US",
     type: "website",
   },
@@ -51,7 +52,6 @@ export const metadata: Metadata = {
     title: "AeroForge Labs – Next-Gen Drones & Rapid Prototyping",
     description:
       "Advanced e-commerce platform for drones, RC aeronautics, 3D printing, and hardware repair services.",
-    images: ["/public/vercel.svg"],
   },
   keywords: [
     "Drones",
