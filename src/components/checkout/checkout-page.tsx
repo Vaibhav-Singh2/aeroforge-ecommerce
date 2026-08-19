@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, ChevronLeft, CreditCard, Check } from "lucide-react";
+import { ShoppingBag, ChevronLeft, CreditCard, Check, ShieldCheck, LogIn } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { clearCart, type CartItem } from "@/lib/redux/features/cartSlice";
 import { getUserCartItems } from "@/lib/actions/cart-actions";
 import { createOrder } from "@/lib/actions/order-actions";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +52,7 @@ export function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { user: clerkUser } = useUser();
+  const clerk = useClerk();
   const { items } = useAppSelector((state) => state.cart);
   const { addresses } = useAppSelector((state) => state.user);
   const [activeStep, setActiveStep] = useState(STEPS.ADDRESS);
@@ -80,26 +81,23 @@ export function CheckoutPage() {
   const tax = subtotal * 0.18; // 18% GST
   const total = subtotal + shippingCost + tax;
 
-  // Fetch cart items from the server on component mount
+  // Load cart items: use Redux client items by default, sync from server if authenticated
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const items = await getUserCartItems();
-        setCartItems(items);
-      } catch (error) {
-        console.error("Error fetching cart items:", error);
-        dispatch(
-          addToast({
-            type: "error",
-            title: "Error",
-            message: "Failed to load your cart. Please try again.",
-          }),
-        );
-      }
-    };
-
-    fetchCartItems();
-  }, [dispatch]);
+    if (items.length > 0) {
+      setCartItems(items);
+    }
+    if (clerkUser) {
+      getUserCartItems()
+        .then((serverItems) => {
+          if (serverItems && serverItems.length > 0) {
+            setCartItems(serverItems);
+          }
+        })
+        .catch((error) => {
+          console.warn("Guest or offline cart mode:", error);
+        });
+    }
+  }, [clerkUser, items]);
 
   // Handle address selection
   const handleAddressSelect = (addressId: string) => {
@@ -116,8 +114,22 @@ export function CheckoutPage() {
     setPaymentMethod(value);
   };
 
-  // Move to the next step
+  // Move to the next step (Require sign in for payment / order completion)
   const handleNext = () => {
+    if (!clerkUser) {
+      dispatch(
+        addToast({
+          type: "info",
+          title: "Sign in required",
+          message: "Please sign in to save your shipping details and proceed to payment.",
+        }),
+      );
+      if (clerk && typeof clerk.openSignIn === "function") {
+        clerk.openSignIn();
+      }
+      return;
+    }
+
     switch (activeStep) {
       case STEPS.ADDRESS:
         if (!selectedAddress) {
@@ -427,6 +439,31 @@ export function CheckoutPage() {
   return (
     <div className="container px-5 py-10">
       <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
+
+      {/* Guest Sign-In Notice */}
+      {!clerkUser && (
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 shrink-0 text-sky-500" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                Sign in to complete your purchase
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Sign in or create an account to save your delivery address, track orders, and secure payment.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => clerk.openSignIn()}
+            className="gap-2 shrink-0 text-xs font-semibold"
+          >
+            <LogIn className="h-3.5 w-3.5" />
+            <span>Sign In / Register</span>
+          </Button>
+        </div>
+      )}
 
       {/* Load Razorpay script */}
       <RazorpayScriptLoader />

@@ -37,38 +37,12 @@ export function AddToCartButton({
   const clerk = useClerk();
 
   const handleAddToCart = async () => {
-    if (!isSignedIn) {
-      if (clerk && typeof clerk.openSignIn === "function") {
-        clerk.openSignIn();
-      } else if (
-        typeof window !== "undefined" &&
-        typeof (
-          window as unknown as {
-            Clerk?: {
-              openSignIn?: () => void;
-            };
-          }
-        ).Clerk?.openSignIn === "function"
-      ) {
-        (
-          window as unknown as {
-            Clerk: {
-              openSignIn: () => void;
-            };
-          }
-        ).Clerk.openSignIn();
-      }
-      return;
-    }
     setIsLoading(true);
     try {
-      // Add to server-side cart
-      await addToCart(product.id, quantity, variantId);
-
-      // Update client-side cart state for immediate UI update
+      // 1. Immediately update client-side Redux cart state for instant responsiveness
       dispatch(
         addCartItem({
-          id: `temp-${Date.now()}`,
+          id: `cart-${product.id}-${Date.now()}`,
           productId: product.id,
           variantId,
           quantity,
@@ -76,10 +50,10 @@ export function AddToCartButton({
         }),
       );
 
-      // Open quick cart drawer
+      // 2. Open quick cart drawer so user sees their product added immediately
       dispatch(openCart());
 
-      // Show success notification
+      // 3. Show success toast
       dispatch(
         addToast({
           type: "success",
@@ -87,6 +61,13 @@ export function AddToCartButton({
           message: `${product.name} has been added to your cart.`,
         }),
       );
+
+      // 4. If user is authenticated, sync with server cart in background
+      if (isSignedIn) {
+        addToCart(product.id, quantity, variantId).catch((err) => {
+          console.warn("Background cart sync failed (non-critical):", err);
+        });
+      }
     } catch (error) {
       console.error("Failed to add item to cart:", error);
       dispatch(

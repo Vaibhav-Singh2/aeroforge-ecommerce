@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Model3DViewer } from "@/components/services/model-3d-viewer";
 
 export default function PrintingServicesPage() {
+  const { isSignedIn } = useUser();
+  const clerk = useClerk();
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -54,6 +57,15 @@ export default function PrintingServicesPage() {
   const handleSubmitPrintRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Progressive Authentication Gate: Require sign in when actually submitting order
+    if (!isSignedIn) {
+      setError("Please sign in to submit your 3D print request and track your order.");
+      if (clerk && typeof clerk.openSignIn === "function") {
+        clerk.openSignIn();
+      }
+      return;
+    }
 
     // Check required fields
     if (!projectName || !material) {

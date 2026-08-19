@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,8 @@ import {
 } from "@/components/ui/select";
 
 export default function RepairServicesPage() {
+  const { isSignedIn } = useUser();
+  const clerk = useClerk();
   const [deviceType, setDeviceType] = useState("");
   const [deviceModel, setDeviceModel] = useState("");
   const [deviceBrand, setDeviceBrand] = useState("");
@@ -33,6 +36,15 @@ export default function RepairServicesPage() {
   const handleSubmitRepairRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Progressive Authentication Gate: Require sign in when booking diagnostic repair
+    if (!isSignedIn) {
+      setError("Please sign in to submit your repair booking and track diagnostic status.");
+      if (clerk && typeof clerk.openSignIn === "function") {
+        clerk.openSignIn();
+      }
+      return;
+    }
 
     // Check required fields
     if (!deviceType || !deviceModel || !issueDescription || !contactPhone) {
