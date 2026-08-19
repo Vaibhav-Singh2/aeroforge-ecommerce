@@ -9,37 +9,39 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 const categories = [
   {
     id: 1,
-    name: "Drones",
-    slug: "/category/drones",
+    name: "Racing & FPV Drones",
+    slug: "/category/projects/racing-drones",
     description:
-      "Explore our range of premium drones for hobbyists and professionals",
+      "High-performance FPV racing and freestyle quadcopters built for extreme speed and agility",
     image:
-      "https://images.pexels.com/photos/336232/pexels-photo-336232.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 2,
-    name: "Planes",
-    slug: "/category/planes",
-    description: "Discover RC planes for all skill levels and flying styles",
+    name: "RC Airplanes & Wings",
+    slug: "/category/projects/rc-planes",
+    description:
+      "Fixed-wing aerobatic aircraft, high-speed EDF jets, and long-range autonomous FPV wings",
     image:
-      "https://images.pexels.com/photos/76957/tree-top-view-vista-snow-76957.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "https://images.unsplash.com/photo-1519074069444-1ba4ea16e828?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 3,
-    name: "Accessories",
-    slug: "/category/accessories",
-    description: "Essential accessories to enhance your flying experience",
+    name: "Avionics & Flight Stacks",
+    slug: "/category/parts-and-accessories/flight-controllers",
+    description:
+      "High-rate F7/H7 flight controllers, digital HD video transmitters, and long-range telemetry receivers",
     image:
-      "https://images.pexels.com/photos/4062312/pexels-photo-4062312.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 4,
-    name: "Parts",
-    slug: "/category/parts",
+    name: "Motors & Carbon Frames",
+    slug: "/category/parts-and-accessories/motors-escs",
     description:
-      "Replacement parts and components for maintenance and upgrades",
+      "High-torque brushless motors, high-amp ESCs, and precision-cut carbon fiber airframes",
     image:
-      "https://images.pexels.com/photos/6077870/pexels-photo-6077870.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
   },
 ];
 

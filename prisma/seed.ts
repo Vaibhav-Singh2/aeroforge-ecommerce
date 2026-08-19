@@ -1,116 +1,204 @@
-import { PrismaClient } from "@prisma/client";
+import {
+  PrismaClient,
+  ProductType,
+  ProductStatus,
+  PrintStatus,
+  PrintMaterial,
+  RepairStatus,
+  OrderStatus,
+  PaymentStatus,
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-// ─── Category Data ────────────────────────────────────────────────────────────
+// ─── High-Reliability Curated Image Assets (Unsplash CDN) ─────────────────────
+// Verified aerospace, drone, RC plane, electronics, 3D printing & tooling photos
+const IMAGES = {
+  racingDrones: [
+    "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80",
+  ],
+  photoDrones: [
+    "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1521405924368-64c5b84bec60?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1506947411487-a56738267384?auto=format&fit=crop&w=1200&q=80",
+  ],
+  rcPlanes: [
+    "https://images.unsplash.com/photo-1519074069444-1ba4ea16e828?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1559627748-43b92f75471d?auto=format&fit=crop&w=1200&q=80",
+  ],
+  microDrones: [
+    "https://images.unsplash.com/photo-1579829366248-204fe8413f31?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1524143986875-3b098d78b363?auto=format&fit=crop&w=1200&q=80",
+  ],
+  commercialUAV: [
+    "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1507582020432-2a3bc4ff7a8b?auto=format&fit=crop&w=1200&q=80",
+  ],
+  motors: [
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80",
+  ],
+  flightControllers: [
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=1200&q=80",
+  ],
+  frames: [
+    "https://images.unsplash.com/photo-1581092162384-8987c1d64718?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=1200&q=80",
+  ],
+  batteries: [
+    "https://images.unsplash.com/photo-1619725002198-6a689b72f41d?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80",
+  ],
+  cameras: [
+    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=1200&q=80",
+  ],
+  transmitters: [
+    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80",
+  ],
+  filaments: [
+    "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1631557567889-d370c8329816?auto=format&fit=crop&w=1200&q=80",
+  ],
+  tools: [
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80",
+  ],
+};
+
+// ─── Category Definitions ─────────────────────────────────────────────────────
 
 const categoriesData = [
-  // Ready-Made Projects
+  // READY_MADE_PROJECT
   {
-    name: "Racing Drones",
+    name: "Racing & FPV Drones",
     slug: "racing-drones",
     description:
-      "High-performance FPV racing drones built for speed and agility. Perfect for competitive flying and freestyle tricks.",
-    imageUrl:
-      "https://images.pexels.com/photos/336232/pexels-photo-336232.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "READY_MADE_PROJECT" as const,
+      "High-speed FPV racing and freestyle quadcopters engineered for sub-millisecond response, agile maneuverability, and HD digital transmission.",
+    imageUrl: IMAGES.racingDrones[0],
+    type: ProductType.READY_MADE_PROJECT,
     isActive: true,
   },
   {
-    name: "Photography Drones",
+    name: "Aerial Photography UAVs",
     slug: "photography-drones",
     description:
-      "Professional aerial photography and videography drones with stabilized gimbals and high-resolution cameras.",
-    imageUrl:
-      "https://images.pexels.com/photos/724921/pexels-photo-724921.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "READY_MADE_PROJECT" as const,
+      "Cinema-grade drones equipped with 3-axis stabilized gimbals, 4K/8K sensors, and omnidirectional obstacle avoidance.",
+    imageUrl: IMAGES.photoDrones[0],
+    type: ProductType.READY_MADE_PROJECT,
     isActive: true,
   },
   {
-    name: "RC Planes",
+    name: "RC Airplanes & Wings",
     slug: "rc-planes",
     description:
-      "Fixed-wing RC aircraft ranging from beginner trainers to advanced aerobatic models.",
-    imageUrl:
-      "https://images.pexels.com/photos/76957/tree-top-view-vista-snow-76957.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "READY_MADE_PROJECT" as const,
+      "Aerobatic fixed-wing aircraft, high-thrust EDF jets, and long-range delta wings for sport and FPV cruising.",
+    imageUrl: IMAGES.rcPlanes[0],
+    type: ProductType.READY_MADE_PROJECT,
     isActive: true,
   },
   {
-    name: "Mini & Micro Drones",
+    name: "Micro & Cinewhoop Drones",
     slug: "mini-micro-drones",
     description:
-      "Compact and portable drones ideal for indoor flying, beginners, and hobbyists on the go.",
-    imageUrl:
-      "https://images.pexels.com/photos/1087180/pexels-photo-1087180.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "READY_MADE_PROJECT" as const,
+      "Duct-protected cinewhoops and sub-250g micro quads designed for safe indoor filmmaking and tight gap exploration.",
+    imageUrl: IMAGES.microDrones[0],
+    type: ProductType.READY_MADE_PROJECT,
     isActive: true,
   },
-  // Parts & Accessories
   {
-    name: "Motors & ESCs",
+    name: "Autonomous Commercial UAVs",
+    slug: "commercial-uavs",
+    description:
+      "Enterprise mapping, LiDAR survey, and precision agriculture drone systems with RTK centimeter-accurate positioning.",
+    imageUrl: IMAGES.commercialUAV[0],
+    type: ProductType.READY_MADE_PROJECT,
+    isActive: true,
+  },
+
+  // PART_AND_ACCESSORY
+  {
+    name: "Brushless Motors & ESCs",
     slug: "motors-escs",
     description:
-      "High-quality brushless motors and Electronic Speed Controllers for optimal drone performance.",
-    imageUrl:
-      "https://images.pexels.com/photos/6077870/pexels-photo-6077870.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "High-KV brushless motors, 4-in-1 BlHeli_32/AM32 ESC stacks, and cooling accessories for peak thrust output.",
+    imageUrl: IMAGES.motors[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
   {
-    name: "Flight Controllers & FC Stacks",
+    name: "Flight Controllers & Avionics",
     slug: "flight-controllers",
     description:
-      "Advanced flight controllers, FC stacks, VTXs, and receiver systems for custom builds.",
-    imageUrl:
-      "https://images.pexels.com/photos/4062312/pexels-photo-4062312.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "F7 & H7 processor flight controllers, dual-gyro dampening systems, power distribution boards, and blackbox loggers.",
+    imageUrl: IMAGES.flightControllers[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
   {
-    name: "Propellers & Frames",
+    name: "Carbon Frames & Propellers",
     slug: "propellers-frames",
     description:
-      "Lightweight carbon fiber frames and a wide selection of propellers for every build type.",
-    imageUrl:
-      "https://images.pexels.com/photos/724994/pexels-photo-724994.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "Toray 3K/T700 carbon fiber frames, aerodynamic multi-blade polycarbonate props, and titanium hardware kits.",
+    imageUrl: IMAGES.frames[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
   {
-    name: "Batteries & Chargers",
+    name: "LiPo Batteries & Fast Chargers",
     slug: "batteries-chargers",
     description:
-      "LiPo batteries, balance chargers, and power accessories to keep you flying longer.",
-    imageUrl:
-      "https://images.pexels.com/photos/3829736/pexels-photo-3829736.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "High-discharge graphene 4S/6S LiPo packs, dual-channel smart balance chargers, and LiPo safe storage cases.",
+    imageUrl: IMAGES.batteries[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
   {
-    name: "FPV Cameras & Goggles",
+    name: "FPV Cameras & Video Systems",
     slug: "fpv-cameras-goggles",
     description:
-      "FPV cameras, video transmitters, antennas, and goggles for an immersive flying experience.",
-    imageUrl:
-      "https://images.pexels.com/photos/442589/pexels-photo-442589.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "Low-latency digital HD video transmitters, ultra-wide starlight FPV cameras, patch antennas, and OLED FPV goggles.",
+    imageUrl: IMAGES.cameras[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
   {
-    name: "Transmitters & Receivers",
+    name: "Radio Transmitters & Receivers",
     slug: "transmitters-receivers",
     description:
-      "RC radio transmitters, receivers, and accessories from leading brands like RadioMaster and FrSky.",
-    imageUrl:
-      "https://images.pexels.com/photos/8566526/pexels-photo-8566526.jpeg?auto=compress&cs=tinysrgb&w=800",
-    type: "PART_AND_ACCESSORY" as const,
+      "ExpressLRS 2.4GHz/900MHz transmitters, Hall-effect gimbal radios, diversity receivers, and telemetry modules.",
+    imageUrl: IMAGES.transmitters[0],
+    type: ProductType.PART_AND_ACCESSORY,
+    isActive: true,
+  },
+  {
+    name: "3D Filaments & Resins",
+    slug: "3d-printing-filaments",
+    description:
+      "Engineering-grade carbon fiber PETG, high-temp ABS, flexible TPU 95A, and precision casting resins for prototyping.",
+    imageUrl: IMAGES.filaments[0],
+    type: ProductType.PART_AND_ACCESSORY,
+    isActive: true,
+  },
+  {
+    name: "Diagnostics & Workshop Tools",
+    slug: "tools-and-diagnostics",
+    description:
+      "Digital multi-meters, RF power meters, TS101 soldering irons, smoke stoppers, and hex driver precision toolkits.",
+    imageUrl: IMAGES.tools[0],
+    type: ProductType.PART_AND_ACCESSORY,
     isActive: true,
   },
 ];
 
-// ─── Product Data ─────────────────────────────────────────────────────────────
+// ─── Dynamic Product Master Templates ─────────────────────────────────────────
 
 type ProductSeed = {
   name: string;
@@ -124,7 +212,7 @@ type ProductSeed = {
   tags: string[];
   isFeature: boolean;
   isBestseller: boolean;
-  specifications?: Record<string, string | number | boolean>;
+  specifications: Record<string, string | number | boolean>;
   categorySlug: string;
   variants?: {
     name: string;
@@ -136,739 +224,756 @@ type ProductSeed = {
 };
 
 const productsData: ProductSeed[] = [
-  // ── Racing Drones ──────────────────────────────────────────────────────────
+  // ── 1. Racing & FPV Drones ──────────────────────────────────────────────────
   {
-    name: "iFlight Nazgul5 V3 HD 5-inch FPV Racing Drone",
-    slug: "iflight-nazgul5-v3-hd",
+    name: "AeroForge X-500 Carbon Pro 5-inch FPV Racing Quad",
+    slug: "aeroforge-x500-carbon-pro-5inch",
     description:
-      "The iFlight Nazgul5 V3 HD is a premium 5-inch FPV freestyle drone that delivers stunning HD footage via the DJI O3 digital FPV system. It features the XING2 2207 1855KV motors, Succex-E F7 V2 stack, and a robust carbon fiber frame capable of 120+ mph speeds. Ideal for both freestyle pilots and competitive FPV racers.",
-    sku: "IFL-NAZ5-V3-HD",
-    price: 42999,
-    quantity: 18,
-    weight: 390,
-    images: [
-      "https://images.pexels.com/photos/336232/pexels-photo-336232.jpeg?auto=compress&cs=tinysrgb&w=800",
-      "https://images.pexels.com/photos/724921/pexels-photo-724921.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["fpv", "racing", "5-inch", "iflight", "o3", "hd", "freestyle"],
+      "Engineered for competitive FPV circuits, the X-500 Carbon Pro features a 6mm Toray 3K chamfered carbon frame, 2207 1950KV brushless motors, and an integrated DJI O3 HD digital transmission unit capable of reaching speeds up to 130 mph with sub-28ms video latency.",
+    sku: "AFL-X500-5IN-HD",
+    price: 44999,
+    quantity: 24,
+    weight: 385,
+    images: [IMAGES.racingDrones[0], IMAGES.racingDrones[1]],
+    tags: ["fpv", "racing", "5-inch", "dji-o3", "carbon-fiber", "bnf", "aeroforge"],
     isFeature: true,
     isBestseller: true,
     categorySlug: "racing-drones",
     specifications: {
-      "Frame Size": "5 inch",
-      Motor: "XING2 2207 1855KV",
-      "FC Stack": "Succex-E F7 V2",
-      Camera: "DJI O3 Air Unit",
-      "Video System": "DJI Digital HD FPV",
-      "Top Speed": "120+ mph",
-      "Flight Time": "5–7 min",
-      "Weight (without battery)": "390g",
+      "Frame Type": "True-X 5-inch 3K Carbon Fiber",
+      Motors: "AeroForge 2207 1950KV Brushless",
+      "FC Stack": "F722 Dual Gyro + 55A 32-bit ESC",
+      "Video System": "DJI O3 Air Unit (4K 60fps)",
+      "Top Speed": "130 mph / 209 km/h",
+      "Input Voltage": "6S LiPo (22.2V - 25.2V)",
+      "Flight Time": "5-8 minutes",
+      Weight: "385g (excl. battery)",
     },
     variants: [
       {
-        name: "DJI O3 / BNF (No Remote)",
-        sku: "IFL-NAZ5-V3-HD-BNF",
-        price: 42999,
-        quantity: 12,
+        name: "6S BNF (Bind-and-Fly / No Radio)",
+        sku: "AFL-X500-5IN-BNF-6S",
+        price: 44999,
+        quantity: 16,
       },
       {
-        name: "DJI O3 / RTF with RadioMaster TX16S",
-        sku: "IFL-NAZ5-V3-HD-RTF",
-        price: 66999,
-        quantity: 6,
-      },
-    ],
-  },
-  {
-    name: "Emax Tinyhawk 3 Freestyle RTF Kit",
-    slug: "emax-tinyhawk-3-freestyle-rtf",
-    description:
-      "The Emax Tinyhawk 3 Freestyle is the perfect entry point into FPV racing. This Ready-To-Fly kit includes the drone, EV800D goggles, and the Emax E8 transmitter. The 2.5-inch props and brushless motors provide an exhilarating yet manageable experience for newcomers and seasoned pilots alike.",
-    sku: "EMAX-TH3-FR-RTF",
-    price: 18499,
-    quantity: 35,
-    weight: 125,
-    images: [
-      "https://images.pexels.com/photos/1087180/pexels-photo-1087180.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["beginner", "whoop", "fpv", "emax", "tinyhawk", "rtf", "indoor"],
-    isFeature: true,
-    isBestseller: true,
-    categorySlug: "racing-drones",
-    specifications: {
-      "Frame Size": "2.5 inch",
-      Motor: "1404 6500KV",
-      Camera: "Runcam Nano4",
-      "Video Transmitter": "25–200mW",
-      "Flight Time": "4–6 min",
-      Includes: "Drone, EV800D Goggles, E8 TX",
-      Weight: "125g",
-    },
-  },
-  {
-    name: "BetaFPV Pavo25 Walksnail HD Toothpick",
-    slug: "betafpv-pavo25-walksnail",
-    description:
-      "The Pavo25 is a sleek 2.5-inch HD freestyle quad powered by the Walksnail Avatar digital video system. Ultra-lightweight at just 89g, it flies indoors and outdoors with ease. Features the F4 1S–2S AIO FC, 1404 motors, and Walksnail Avatar Mini camera for crisp 1080p footage.",
-    sku: "BFPV-PAV25-WS",
-    price: 22499,
-    quantity: 22,
-    weight: 89,
-    images: [
-      "https://images.pexels.com/photos/724994/pexels-photo-724994.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "fpv",
-      "toothpick",
-      "hd",
-      "walksnail",
-      "betafpv",
-      "indoor",
-      "2.5inch",
-    ],
-    isFeature: false,
-    isBestseller: false,
-    categorySlug: "racing-drones",
-    specifications: {
-      Frame: "2.5 inch Toothpick",
-      FC: "F4 AIO 20A ESC",
-      Motor: "1404 3500KV",
-      Camera: "Walksnail Avatar Mini",
-      Weight: "89g",
-      Battery: "2S 450–550mAh",
-    },
-  },
-
-  // ── Photography Drones ─────────────────────────────────────────────────────
-  {
-    name: "DJI Mini 4 Pro (DJI RC-N2)",
-    slug: "dji-mini-4-pro-rc-n2",
-    description:
-      "The DJI Mini 4 Pro is an ultralight folding drone under 249g, packed with a 1/1.3-inch CMOS sensor, omnidirectional obstacle sensing, and 4K/60fps HDR video capability. It supports ActiveTrack 360°, allows 20km max transmission range via O4, and is the go-to choice for travel creators and professionals.",
-    sku: "DJI-M4P-RCN2",
-    price: 74999,
-    quantity: 10,
-    weight: 249,
-    images: [
-      "https://images.pexels.com/photos/724921/pexels-photo-724921.jpeg?auto=compress&cs=tinysrgb&w=800",
-      "https://images.pexels.com/photos/336232/pexels-photo-336232.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["dji", "mini", "photography", "4k", "travel", "foldable", "249g"],
-    isFeature: true,
-    isBestseller: true,
-    categorySlug: "photography-drones",
-    specifications: {
-      Weight: "249g",
-      "Camera Sensor": "1/1.3-inch CMOS",
-      "Max Video Resolution": "4K/60fps HDR",
-      "Max Photo Resolution": "48MP",
-      "Obstacle Sensing": "Omnidirectional",
-      "Max Transmission Range": "20 km",
-      "Max Flight Time": "34 min",
-      "Wind Resistance": "10.7 m/s (Level 5)",
-      "Transmission System": "DJI O4",
-    },
-    variants: [
-      {
-        name: "Fly More Combo (DJI RC-N2)",
-        sku: "DJI-M4P-RCN2-FMC",
-        price: 99999,
-        quantity: 5,
-      },
-      {
-        name: "Standard (DJI RC-N2)",
-        sku: "DJI-M4P-RCN2-STD",
-        price: 74999,
-        quantity: 5,
-      },
-    ],
-  },
-  {
-    name: "Autel Robotics EVO Lite+ Premium Bundle",
-    slug: "autel-evo-lite-plus-premium",
-    description:
-      "The Autel EVO Lite+ features a 1-inch CMOS sensor, 6K video at 30fps, adjustable aperture (f/2.8–f/11), and SkyLink 3 transmission covering 12km. With 40 min flight time and PDAF + CDAF hybrid autofocus, it rivals premium drones at a competitive price point.",
-    sku: "AUT-ELT-PLUS-PRE",
-    price: 89999,
-    quantity: 7,
-    weight: 835,
-    images: [
-      "https://images.pexels.com/photos/442589/pexels-photo-442589.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["autel", "6k", "photography", "1-inch", "professional", "evo"],
-    isFeature: true,
-    isBestseller: false,
-    categorySlug: "photography-drones",
-    specifications: {
-      Weight: "835g",
-      Sensor: "1-inch CMOS",
-      Video: "6K/30fps, 4K/60fps",
-      Photo: "20MP",
-      Aperture: "f/2.8–f/11",
-      "Max Flight Time": "40 min",
-      "Transmission Range": "12 km",
-      Autofocus: "PDAF + CDAF Hybrid",
-    },
-  },
-
-  // ── RC Planes ─────────────────────────────────────────────────────────────
-  {
-    name: "E-flite Apprentice STS 1.5m RTF with SAFE",
-    slug: "eflite-apprentice-sts-rtf",
-    description:
-      "The Apprentice STS 1.5m is the ultimate beginner RC airplane with SAFE (Sensor Assisted Flight Envelope) technology. It features Panic Recovery mode, altitude hold, AS3X stabilization, and Beginner/Intermediate/Advanced flight modes — all in a durable foam airframe. Includes everything to fly right out of the box.",
-    sku: "EFL-APP-STS15-RTF",
-    price: 29999,
-    quantity: 14,
-    weight: 1380,
-    images: [
-      "https://images.pexels.com/photos/76957/tree-top-view-vista-snow-76957.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["rc-plane", "beginner", "rtf", "safe", "eflite", "trainer", "as3x"],
-    isFeature: true,
-    isBestseller: true,
-    categorySlug: "rc-planes",
-    specifications: {
-      Wingspan: "1500mm",
-      Length: "1118mm",
-      Weight: "1380g",
-      Motor: "480W brushless",
-      Battery: "3S 3200mAh LiPo",
-      "Flight Time": "15–20 min",
-      Stabilization: "AS3X + SAFE",
-      Modes: "Beginner, Intermediate, Advanced",
-      Includes: "Transmitter, Battery, Charger",
-    },
-  },
-  {
-    name: "Volantex RC Ranger EX Long Range FPV Plane",
-    slug: "volantex-ranger-ex-fpv",
-    description:
-      "The Ranger EX is built for long-range FPV flying with its efficient 2-meter wingspan and efficient brushless powertrain. Its glider-style airframe provides stability and efficiency, making it ideal for slow scenic cruising or high-altitude FPV missions. Available as PNP (no transmitter) or RTF with transmitter.",
-    sku: "VOL-RNG-EX-FPV",
-    price: 16499,
-    quantity: 20,
-    weight: 980,
-    images: [
-      "https://images.pexels.com/photos/724994/pexels-photo-724994.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["rc-plane", "fpv", "long-range", "glider", "volantex", "2m"],
-    isFeature: false,
-    isBestseller: false,
-    categorySlug: "rc-planes",
-    specifications: {
-      Wingspan: "1980mm",
-      Weight: "980g",
-      Motor: "2826 1250KV",
-      Battery: "3S 2200mAh",
-      "Flight Time": "35–60 min",
-      "Max Speed": "90 km/h",
-      "FPV Ready": true,
-    },
-    variants: [
-      {
-        name: "PNP (No Transmitter/Battery)",
-        sku: "VOL-RNG-EX-PNP",
-        price: 12999,
-        quantity: 12,
-      },
-      {
-        name: "RTF (Includes TX & Battery)",
-        sku: "VOL-RNG-EX-RTF",
-        price: 16499,
+        name: "6S RTF (Includes RadioMaster TX16S Radio + 2x LiPo)",
+        sku: "AFL-X500-5IN-RTF-6S",
+        price: 68999,
         quantity: 8,
       },
     ],
   },
-
-  // ── Mini & Micro Drones ────────────────────────────────────────────────────
   {
-    name: "DJI Tello Powered by DJI Tech",
-    slug: "dji-tello",
+    name: "Vortex 3.5 Freestyle Agile Quad",
+    slug: "vortex-35-freestyle-agile-quad",
     description:
-      "The Tello is a fun mini drone ideal for kids and beginners. Powered by DJI flight technology and an Intel processor, it features 720p HD video transmission, EZ Shot modes, and a safe 5-minute flight. Programmable via the Scratch visual programming language, making it great for STEM education.",
-    sku: "DJI-TELLO-DRONE",
-    price: 6499,
-    quantity: 50,
-    weight: 80,
-    images: [
-      "https://images.pexels.com/photos/1087180/pexels-photo-1087180.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["dji", "tello", "beginner", "kids", "mini", "stem", "programming"],
-    isFeature: false,
-    isBestseller: true,
-    categorySlug: "mini-micro-drones",
-    specifications: {
-      Weight: "80g",
-      Camera: "5MP, 720p video",
-      "Flight Time": "13 min",
-      "Max Range": "100m",
-      Processor: "Intel processor",
-      Programmable: true,
-      Stabilization: "EIS",
-    },
-  },
-  {
-    name: "BetaFPV Cetus X FPV Kit",
-    slug: "betafpv-cetus-x-fpv-kit",
-    description:
-      "The Cetus X is a beginner FPV kit that includes the dual-camera whoop drone, EV800D goggles, and LiteRadio 3 transmitter. The dual-camera design lets you switch between FPV and HD top-down footage. Three flight modes (Normal, Sport, Manual) grow with your skill level.",
-    sku: "BFPV-CETUS-X-KIT",
-    price: 13999,
-    quantity: 28,
-    weight: 34,
-    images: [
-      "https://images.pexels.com/photos/8566526/pexels-photo-8566526.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "betafpv",
-      "beginner",
-      "whoop",
-      "kit",
-      "fpv",
-      "goggles",
-      "dual-camera",
-    ],
-    isFeature: true,
-    isBestseller: true,
-    categorySlug: "mini-micro-drones",
-    specifications: {
-      Frame: "75mm Whoop",
-      Weight: "34g",
-      Camera: "Dual Camera (FPV + HD top)",
-      Modes: "Normal / Sport / Manual",
-      Battery: "1S 450mAh",
-      "Flight Time": "4–6 min",
-      "Kit Includes":
-        "Drone, EV800D Goggles, LiteRadio 3 TX, 2x Batteries, Charger",
-    },
-  },
-
-  // ── Motors & ESCs ─────────────────────────────────────────────────────────
-  {
-    name: "T-Motor F90 1300KV 5-inch Freestyle Motor",
-    slug: "tmotor-f90-1300kv",
-    description:
-      "The T-Motor F90 is a top-tier freestyle motor engineered for 5-inch builds. With 1300KV winding and N52 magnets, it delivers smooth power delivery and incredible efficiency. The titanium motor shaft and ceramic bearings ensure long-lasting durability even after hard crashes.",
-    sku: "TMR-F90-1300KV",
-    price: 2299,
-    quantity: 100,
-    weight: 44,
-    images: [
-      "https://images.pexels.com/photos/6077870/pexels-photo-6077870.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "motor",
-      "t-motor",
-      "f90",
-      "5-inch",
-      "freestyle",
-      "1300kv",
-      "brushless",
-    ],
-    isFeature: false,
-    isBestseller: true,
-    categorySlug: "motors-escs",
-    specifications: {
-      KV: 1300,
-      "Stator Size": "2306.5",
-      "Max Thrust": "1700g",
-      Shaft: "Titanium Alloy",
-      Bearing: "Ceramic",
-      Weight: "44g",
-      "Recommended ESC": "30–45A",
-      "Cell Count": "4S–6S",
-    },
-    variants: [
-      {
-        name: "CCW (Counter-Clockwise)",
-        sku: "TMR-F90-1300KV-CCW",
-        quantity: 50,
-      },
-      { name: "CW (Clockwise)", sku: "TMR-F90-1300KV-CW", quantity: 50 },
-    ],
-  },
-  {
-    name: "Hobbywing XRotor 45A BLHeli_32 ESC",
-    slug: "hobbywing-xrotor-45a-blheli32",
-    description:
-      "The Hobbywing XRotor 45A is a high-performance ESC running BLHeli_32 32-bit firmware with DSHOT1200 and Multishot protocol support. Features include active freewheeling, RPM filter telemetry, and auto-timing for optimal efficiency across different motor sizes.",
-    sku: "HBW-XR-45A-BL32",
-    price: 1849,
-    quantity: 60,
-    weight: 9,
-    images: [
-      "https://images.pexels.com/photos/4062312/pexels-photo-4062312.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["esc", "blheli32", "hobbywing", "45a", "dshot", "single"],
-    isFeature: false,
-    isBestseller: false,
-    categorySlug: "motors-escs",
-    specifications: {
-      "Current Rating": "45A continuous",
-      "Burst Current": "55A",
-      Firmware: "BLHeli_32",
-      Protocols: "DSHOT150/300/600/1200, Multishot, Oneshot",
-      Weight: "9g",
-      "Input Voltage": "2S–6S LiPo",
-      Telemetry: "RPM, Temp",
-    },
-  },
-
-  // ── Flight Controllers ─────────────────────────────────────────────────────
-  {
-    name: "Matek F722-SE F7 Flight Controller",
-    slug: "matek-f722-se-fc",
-    description:
-      "The Matek F722-SE is a feature-packed F7 flight controller ideal for 3–7 inch builds. It features a built-in OSD, 6 UARTs, dual gyros (MPU6000 + ICM42688P), barometer, blackbox, and full LED/buzzer support. Compatible with Betaflight, iNav, and Ardupilot firmware.",
-    sku: "MKS-F722-SE-FC",
-    price: 5499,
-    quantity: 40,
-    weight: 26,
-    images: [
-      "https://images.pexels.com/photos/4062312/pexels-photo-4062312.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["flight-controller", "f7", "matek", "betaflight", "inav", "osd"],
-    isFeature: true,
-    isBestseller: true,
-    categorySlug: "flight-controllers",
-    specifications: {
-      MCU: "STM32F722RET6",
-      Gyros: "MPU6000 + ICM42688P",
-      OSD: "AT7456E",
-      UARTs: 6,
-      Blackbox: "16MB Flash",
-      Barometer: "BMP280",
-      Firmware: "Betaflight, iNav, Ardupilot",
-      Size: "36x36mm (30.5mm mounting)",
-      Weight: "26g",
-    },
-  },
-  {
-    name: "SpeedyBee F405 WING APP FC",
-    slug: "speedybee-f405-wing-app",
-    description:
-      "The SpeedyBee F405 WING is a dedicated fixed-wing flight controller with Bluetooth configuration via the SpeedyBee app. It features 12 servo outputs, dual IMUs, a built-in compass, barometer, and full Ardupilot/iNav support. Perfect for RC planes and VTOLs.",
-    sku: "SPB-F405W-APP-FC",
-    price: 6299,
-    quantity: 25,
-    weight: 22,
-    images: [
-      "https://images.pexels.com/photos/336232/pexels-photo-336232.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "flight-controller",
-      "fixed-wing",
-      "speedybee",
-      "ardupilot",
-      "inav",
-      "vtol",
-    ],
-    isFeature: false,
-    isBestseller: false,
-    categorySlug: "flight-controllers",
-    specifications: {
-      MCU: "STM32F405",
-      IMU: "Dual ICM-42688P",
-      "Servo Outputs": 12,
-      GPS: "Built-in support",
-      Bluetooth: "For SpeedyBee App config",
-      Firmware: "Ardupilot, iNav",
-      Barometer: "SPL06",
-      Compass: "QMC5883L",
-    },
-  },
-
-  // ── Propellers & Frames ────────────────────────────────────────────────────
-  {
-    name: "HQProp S5 5x4.3x3 Tri-Blade Propeller (Set of 4)",
-    slug: "hqprop-s5-543x3-set4",
-    description:
-      "The HQProp S5 5x4.3x3 is a high-performance freestyle propeller injected with premium polycarbonate, delivering exceptional efficiency and durability. The tri-blade design reduces vibration and increases thrust compared to bi-blade alternatives. Includes 2 CW + 2 CCW propellers.",
-    sku: "HQPR-S5-543X3-S4",
-    price: 549,
-    quantity: 200,
-    weight: 16,
-    images: [
-      "https://images.pexels.com/photos/724994/pexels-photo-724994.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["propeller", "hqprop", "5inch", "tri-blade", "freestyle"],
-    isFeature: false,
-    isBestseller: true,
-    categorySlug: "propellers-frames",
-    specifications: {
-      Diameter: "5 inch",
-      Pitch: "4.3",
-      Blades: 3,
-      Material: "Polycarbonate",
-      "Mounting Hole": "5mm",
-      Weight: "4g per prop",
-      "Set Includes": "2x CW + 2x CCW",
-    },
-    variants: [
-      { name: "Blue", sku: "HQPR-S5-543X3-S4-BLU", quantity: 50 },
-      { name: "Red", sku: "HQPR-S5-543X3-S4-RED", quantity: 50 },
-      { name: "Black", sku: "HQPR-S5-543X3-S4-BLK", quantity: 50 },
-      { name: "Transparent", sku: "HQPR-S5-543X3-S4-CLR", quantity: 50 },
-    ],
-  },
-  {
-    name: "ImpulseRC Apex 5-inch FPV Frame Kit",
-    slug: "impulserc-apex-5inch-frame",
-    description:
-      "The ImpulseRC Apex is a true X geometry 5-inch frame crafted from 5mm T700 carbon fiber arms with a thick 3mm top plate. It features a low-mounted HD camera zone for DJI O3, Walksnail, or analog setups, and a solid 30.5mm FC mounting pattern with full hardware kit included.",
-    sku: "IMP-APEX5-FRM-KIT",
-    price: 8999,
+      "A lightweight 3.5-inch freestyle drone that blends the agility of a micro quad with the momentum of a full 5-inch rig. Built with 1404 3800KV motors for snappy throttle response and cinematic park flying.",
+    sku: "AFL-VTX-35-FR",
+    price: 24999,
     quantity: 30,
     weight: 165,
-    images: [
-      "https://images.pexels.com/photos/6077870/pexels-photo-6077870.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["frame", "impulserc", "apex", "5inch", "carbon-fiber", "fpv"],
+    images: [IMAGES.racingDrones[1], IMAGES.racingDrones[2]],
+    tags: ["freestyle", "3.5-inch", "lightweight", "analog", "sub250g"],
     isFeature: false,
-    isBestseller: false,
-    categorySlug: "propellers-frames",
+    isBestseller: true,
+    categorySlug: "racing-drones",
     specifications: {
-      Wheelbase: "220mm",
-      "Frame Style": "True-X",
-      "Arm Thickness": "5mm T700 Carbon Fiber",
-      "Top Plate": "3mm Carbon Fiber",
-      "Motor Mount": "16x16mm + 19x19mm",
-      "FC Mount": "30.5mm",
-      Weight: "165g",
+      "Frame Size": "3.5 inch",
+      Motors: "1404 3800KV",
+      "FC Stack": "AIO F411 20A",
+      "Video Link": "Walksnail Avatar HD Mini",
+      "Input Voltage": "4S LiPo",
+      "All-Up Weight": "240g with 4S 650mAh",
+    },
+  },
+  {
+    name: "Phantom Apex 7-inch Long-Range FPV Explorer",
+    slug: "phantom-apex-7inch-long-range",
+    description:
+      "Designed for mountain surfing and long-range cinematic expeditions, the Phantom Apex 7-inch carries large Li-Ion battery packs for up to 28 minutes of continuous flight while maintaining GPS rescue capabilities.",
+    sku: "AFL-PHN-7IN-LR",
+    price: 52999,
+    quantity: 12,
+    weight: 620,
+    images: [IMAGES.racingDrones[2], IMAGES.racingDrones[0]],
+    tags: ["long-range", "7-inch", "gps", "cinematic", "mountain-surf"],
+    isFeature: true,
+    isBestseller: false,
+    categorySlug: "racing-drones",
+    specifications: {
+      "Frame Size": "7 inch DeadCat",
+      Motors: "2806.5 1300KV",
+      "GPS Module": "M10Q-5883 Compass",
+      "Flight Time": "25-28 minutes on 6S 4000mAh",
+      "Max Range": "12 km line of sight",
     },
   },
 
-  // ── Batteries & Chargers ──────────────────────────────────────────────────
+  // ── 2. Aerial Photography UAVs ──────────────────────────────────────────────
   {
-    name: "CNHL 1500mAh 4S 100C LiPo Battery",
-    slug: "cnhl-1500mah-4s-100c",
+    name: "SkyMaster Horizon 8K Cinematic Aerial Platform",
+    slug: "skymaster-horizon-8k-cinematic",
     description:
-      "The CNHL MiniStar 1500mAh 4S 100C is a proven favourite in the FPV racing community. With a true 100C continuous discharge rating, it delivers consistent voltage sag-free power to demanding freestyle builds and 5-inch quad setups. XT60 connector included.",
-    sku: "CNHL-1500-4S-100C",
-    price: 2799,
-    quantity: 80,
-    weight: 185,
-    images: [
-      "https://images.pexels.com/photos/3829736/pexels-photo-3829736.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["battery", "lipo", "4s", "1500mah", "cnhl", "fpv", "xt60"],
-    isFeature: false,
+      "A flagship photography and filmmaking UAV with a 1-inch CMOS sensor, 8K 30fps / 4K 120fps video recording, 10-bit D-Log M color profile, and 45 minutes of stable hovering time with 360-degree LiDAR obstacle sensing.",
+    sku: "AFL-SKY-HZ-8K",
+    price: 89999,
+    quantity: 15,
+    weight: 890,
+    images: [IMAGES.photoDrones[0], IMAGES.photoDrones[1]],
+    tags: ["photography", "8k", "cinema", "lidar", "gimbal", "4k120"],
+    isFeature: true,
     isBestseller: true,
-    categorySlug: "batteries-chargers",
+    categorySlug: "photography-drones",
     specifications: {
-      Capacity: "1500mAh",
-      "Cell Count": "4S (14.8V)",
-      "C Rating": "100C continuous / 200C burst",
-      "Max Discharge Rate": "150A",
-      Connector: "XT60",
-      Weight: "185g",
-      Dimensions: "73x36x29mm",
+      "Camera Sensor": "1-inch 48MP CMOS",
+      "Video Resolution": "8K @ 30fps / 4K @ 120fps",
+      Gimbal: "3-Axis Mechanical Stabilization",
+      "Max Flight Time": "45 minutes",
+      "Obstacle Sensing": "Omnidirectional LiDAR + Dual Vision",
+      "Transmission Range": "15 km HD O3+",
     },
     variants: [
       {
-        name: "Single Pack",
-        sku: "CNHL-1500-4S-100C-1",
-        price: 2799,
-        quantity: 60,
+        name: "Standard Pack (Drone + 1 Battery + Smart Remote)",
+        sku: "AFL-SKY-HZ-8K-STD",
+        price: 89999,
+        quantity: 10,
       },
       {
-        name: "Pack of 4",
-        sku: "CNHL-1500-4S-100C-4",
-        price: 10499,
-        quantity: 20,
+        name: "Fly More Combo (3 Batteries + Hub + ND Filter Set + Case)",
+        sku: "AFL-SKY-HZ-8K-FLYMORE",
+        price: 114999,
+        quantity: 5,
       },
     ],
   },
   {
-    name: "ISDT Q6 Pro 14A 300W LiPo Charger",
-    slug: "isdt-q6-pro-charger",
+    name: "AeroLens Pro 4K Travel Folding Drone",
+    slug: "aerolens-pro-4k-travel-drone",
     description:
-      "The ISDT Q6 Pro is a compact yet powerful 300W AC/DC smart balance charger supporting LiPo, LiHV, LiIon, NiMH, NiCd, and Pb battery types. Features a color LCD screen, USB-C PD output, and up to 14A charge current. The regenerative discharge function returns power back to the mains.",
-    sku: "ISDT-Q6PRO-CHG",
-    price: 4299,
+      "Ultra-compact folding quadcopter under 249 grams that doesn't compromise on optical quality. Features a 1/1.3-inch sensor, 4K HDR video, true vertical shooting for social media, and level 5 wind resistance.",
+    sku: "AFL-LNS-4K-TRV",
+    price: 38999,
+    quantity: 35,
+    weight: 246,
+    images: [IMAGES.photoDrones[1], IMAGES.photoDrones[2]],
+    tags: ["travel", "folding", "sub250g", "4k-hdr", "vertical-video"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "photography-drones",
+    specifications: {
+      Weight: "246g (Sub-249g Category)",
+      Resolution: "4K HDR @ 60fps",
+      "Flight Time": "34 minutes",
+      "Wind Resistance": "10.7 m/s (Scale 5)",
+    },
+  },
+
+  // ── 3. RC Airplanes & Wings ─────────────────────────────────────────────────
+  {
+    name: "AeroSwept V2 1200mm Long-Range FPV Flying Wing",
+    slug: "aeroswept-v2-1200mm-fpv-wing",
+    description:
+      "Molded from durable EPP foam with carbon fiber spar reinforcement, the AeroSwept V2 is an aerodynamically optimized delta wing capable of 45+ minute cruising speeds and rock-steady automated waypoint navigation via ArduPilot / INAV.",
+    sku: "AFL-ASW-V2-1200",
+    price: 18999,
+    quantity: 20,
+    weight: 750,
+    images: [IMAGES.rcPlanes[0], IMAGES.rcPlanes[1]],
+    tags: ["rc-plane", "flying-wing", "fpv", "inav", "epp-foam", "long-range"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "rc-planes",
+    specifications: {
+      Wingspan: "1200mm (47.2 in)",
+      Material: "High-Density EPP with Carbon Spars",
+      Motor: "2216 1400KV Outrunner",
+      ESC: "50A with 5V/5A Switching BEC",
+      "Cruise Speed": "65 km/h",
+      "Max Speed": "145 km/h",
+      "Flight Time": "45-60 minutes on 4S 5000mAh",
+    },
+  },
+  {
+    name: "ThunderJet 70mm EDF Aerobatic Fighter Jet",
+    slug: "thunderjet-70mm-edf-fighter",
+    description:
+      "A scale 70mm 12-blade Electric Ducted Fan (EDF) jet replicating modern fighter avionics. Delivers turbine-like acoustics, functional electric retracts with metal shock-absorbing struts, and crisp roll rates.",
+    sku: "AFL-THJ-70-EDF",
+    price: 28999,
+    quantity: 14,
+    weight: 1850,
+    images: [IMAGES.rcPlanes[1], IMAGES.rcPlanes[2]],
+    tags: ["edf-jet", "scale-airplane", "70mm", "retracts", "high-speed"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "rc-planes",
+    specifications: {
+      "EDF Unit": "70mm 12-Blade Ducted Fan",
+      Motor: "2860 2200KV Inrunner",
+      ESC: "80A Brushless with XT90",
+      Retracts: "All-metal CNC shock absorbing",
+      "Battery Requirement": "6S 3300mAh - 4000mAh LiPo",
+    },
+  },
+
+  // ── 4. Micro & Cinewhoop Drones ─────────────────────────────────────────────
+  {
+    name: "CineSafe 25 HD Ducted Indoor Whoop",
+    slug: "cinesafe-25-hd-ducted-whoop",
+    description:
+      "An ultra-safe 2.5-inch cinewhoop with molded prop guards, soft TPU bumpers, and DJI O3 digital video. Perfect for high-definition close-proximity indoor filming around people and delicate interiors.",
+    sku: "AFL-CS-25-HD",
+    price: 32999,
+    quantity: 28,
+    weight: 142,
+    images: [IMAGES.microDrones[0], IMAGES.microDrones[1]],
+    tags: ["cinewhoop", "indoor", "prop-guards", "hd-video", "safe"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "mini-micro-drones",
+    specifications: {
+      "Prop Size": "2.5 inch ducted",
+      Motor: "1404 4600KV",
+      "FC Stack": "AIO F722 35A",
+      "Camera Mount": "Vibration dampened TPU mount for Naked GoPro / Action 4",
+      "Flight Time": "6-8 minutes",
+    },
+  },
+
+  // ── 5. Autonomous Commercial UAVs ───────────────────────────────────────────
+  {
+    name: "AeroSurvey RTK Quadrotor LiDAR Mapping UAV",
+    slug: "aerosurvey-rtk-lidar-mapping-uav",
+    description:
+      "Industrial enterprise drone built for topographical surveying, infrastructure inspection, and precision agriculture. Integrates dual-frequency RTK GNSS for centimeter-level accuracy without ground control points.",
+    sku: "AFL-ASV-RTK-IND",
+    price: 185000,
+    quantity: 6,
+    weight: 3400,
+    images: [IMAGES.commercialUAV[0], IMAGES.commercialUAV[1]],
+    tags: ["commercial", "rtk", "surveying", "lidar", "enterprise", "mapping"],
+    isFeature: true,
+    isBestseller: false,
+    categorySlug: "commercial-uavs",
+    specifications: {
+      "Payload Capacity": "1.5 kg",
+      "Max Flight Time": "52 minutes",
+      "Positioning Accuracy": "RTK Fix: 1cm + 1ppm horizontal",
+      "Ingress Protection": "IP55 Weather Resistance",
+      "Operating Temp": "-20°C to 50°C",
+    },
+  },
+
+  // ── 6. Brushless Motors & ESCs ──────────────────────────────────────────────
+  {
+    name: "AeroForge ApexDrive 2207.5 1950KV Brushless Motor",
+    slug: "aeroforge-apexdrive-22075-1950kv",
+    description:
+      "Premium titanium-shaft brushless motor designed for maximum low-end torque and thermal efficiency. Features N52SH curved arc magnets, Japanese NSK 9x4x4 bearings, and 200°C oxygen-free copper windings.",
+    sku: "AFL-MOT-2207-1950",
+    price: 1899,
+    quantity: 150,
+    weight: 32.5,
+    images: [IMAGES.motors[0], IMAGES.motors[1]],
+    tags: ["motor", "brushless", "2207", "6s", "titanium-shaft", "nsk"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "motors-escs",
+    specifications: {
+      "Stator Diameter": "22 mm",
+      "Stator Height": "7.5 mm",
+      KV: 1950,
+      "Shaft Material": "Grade 5 Titanium Alloy",
+      "Peak Current": "48.5A (60s)",
+      "Max Thrust": "1980g per motor (with 5.1x4.6x3 prop)",
+    },
+    variants: [
+      { name: "1950KV (Optimized for 6S LiPo)", sku: "AFL-MOT-2207-1950KV", price: 1899, quantity: 100 },
+      { name: "2550KV (Optimized for 4S LiPo)", sku: "AFL-MOT-2207-2550KV", price: 1899, quantity: 50 },
+    ],
+  },
+  {
+    name: "SpeedForce 60A 4-in-1 BlHeli_32 128K ESC",
+    slug: "speedforce-60a-4in1-blheli32-esc",
+    description:
+      "Heavy-duty 4-in-1 ESC with genuine Toshiba MOSFETs, individual heatsink cooling plates, onboard current sensor, and bidirectional DShot1200 support up to 128kHz PWM frequency for ultra-smooth RPM filtering.",
+    sku: "AFL-ESC-60A-4IN1",
+    price: 6499,
+    quantity: 65,
+    weight: 15.2,
+    images: [IMAGES.motors[1], IMAGES.motors[0]],
+    tags: ["esc", "4in1", "60a", "blheli32", "dshot1200", "current-sensor"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "motors-escs",
+    specifications: {
+      "Continuous Current": "60A x 4",
+      "Burst Current": "70A (10s)",
+      "Input Voltage": "3S - 6S LiPo",
+      Firmware: "BLHeli_32 Target",
+      "Mounting Pattern": "30.5 x 30.5mm M3",
+    },
+  },
+
+  // ── 7. Flight Controllers & Avionics ────────────────────────────────────────
+  {
+    name: "Nexus F722 Dual-Gyro Flight Controller Pro",
+    slug: "nexus-f722-dual-gyro-fc-pro",
+    description:
+      "STM32F722RET6 powered flight controller equipped with dual ICM-42688-P gyros running on decoupled isolation damping. Features 8 dedicated motor outputs, integrated DJI HD plug-and-play port, 16MB blackbox flash, and dual 5V/10V BECs.",
+    sku: "AFL-FC-F722-DUAL",
+    price: 4999,
+    quantity: 80,
+    weight: 8.8,
+    images: [IMAGES.flightControllers[0], IMAGES.flightControllers[1]],
+    tags: ["flight-controller", "f722", "dual-gyro", "betaflight", "dji-plug"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "flight-controllers",
+    specifications: {
+      MCU: "STM32F722 216MHz",
+      Gyro: "Dual ICM-42688-P (Software Selectable)",
+      Barometer: "BMP280",
+      OSD: "AT7456E + HD OSD via MSP",
+      BEC: "5V 2.5A + 10V 2A (Switchable)",
+      UARTs: "6 Hardware UARTS",
+      Blackbox: "16MB SPI Flash",
+    },
+  },
+  {
+    name: "AeroStack F722 FC + 55A ESC Complete Flight Stack",
+    slug: "aerostack-f722-55a-complete-stack",
+    description:
+      "A matched stack including the Nexus F722 FC and a high-performance 55A 4-in-1 ESC with plug-and-play wiring harness and CNC anodized aluminum thermal heat shield.",
+    sku: "AFL-STK-F722-55A",
+    price: 9999,
     quantity: 45,
-    weight: 460,
-    images: [
-      "https://images.pexels.com/photos/3829736/pexels-photo-3829736.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "charger",
-      "isdt",
-      "q6pro",
-      "300w",
-      "lipo",
-      "balance-charger",
-      "smart",
-    ],
+    weight: 24,
+    images: [IMAGES.flightControllers[1], IMAGES.flightControllers[2]],
+    tags: ["stack", "f722", "55a", "plug-and-play", "combo"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "flight-controllers",
+    specifications: {
+      Includes: "Nexus F722 FC + 55A BlHeli_S 4-in-1 ESC",
+      "Mounting Pattern": "30.5 x 30.5mm M3 Grommets",
+      "Capacitor Included": "35V 1000uF Low-ESR Rubycon",
+    },
+  },
+
+  // ── 8. Carbon Frames & Propellers ───────────────────────────────────────────
+  {
+    name: "Titan-X 5-inch Chamfered Carbon Fiber Frame Kit",
+    slug: "titan-x-5inch-carbon-frame-kit",
+    description:
+      "Engineered with 6mm quick-swap arms, CNC 7075 aluminum camera side plates, and high-tensile 12.9 grade steel hardware. Features both 20x20mm and 30.5x30.5mm mounting slots with integrated TPU antenna and XT60 mounts.",
+    sku: "AFL-FRM-TTN5-CF",
+    price: 3499,
+    quantity: 90,
+    weight: 128,
+    images: [IMAGES.frames[0], IMAGES.frames[1]],
+    tags: ["frame", "carbon-fiber", "5-inch", "7075-aluminum", "quick-swap"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "propellers-frames",
+    specifications: {
+      "Wheelbase Diagonal": "225 mm",
+      "Arm Thickness": "6.0 mm",
+      "Top Plate": "2.5 mm",
+      "Bottom Plate": "3.0 mm",
+      "Standoff Height": "25 mm CNC Textured",
+    },
+  },
+  {
+    name: "HQProp Ethix S5 5.1x4.0x3 Tri-Blade Propellers (Set of 4)",
+    slug: "hqprop-ethix-s5-tri-blade-props",
+    description:
+      "Ultra-durable polycarbonate tri-blade propellers tuned for silky smooth freestyle video, explosive acceleration, and high crash resilience.",
+    sku: "AFL-PRP-ETH-S5",
+    price: 349,
+    quantity: 400,
+    weight: 3.8,
+    images: [IMAGES.frames[1], IMAGES.frames[0]],
+    tags: ["propeller", "hqprop", "5-inch", "polycarbonate", "freestyle"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "propellers-frames",
+    specifications: {
+      Diameter: "5.1 inch",
+      Pitch: "4.0 inch",
+      Blades: 3,
+      Material: "High-Impact Polycarbonate",
+      Hub: "5mm Center Hole",
+    },
+  },
+
+  // ── 9. LiPo Batteries & Fast Chargers ───────────────────────────────────────
+  {
+    name: "GraphenePower 6S 1400mAh 150C High-Discharge LiPo",
+    slug: "graphenepower-6s-1400mah-150c-lipo",
+    description:
+      "Next-generation graphene matrix technology offering minimal voltage sag under full throttle punches, high continuous 150C discharge capability, and prolonged cycle lifespan. Terminated with genuine Amass XT60 connector.",
+    sku: "AFL-BAT-6S-1400-150C",
+    price: 3199,
+    quantity: 120,
+    weight: 220,
+    images: [IMAGES.batteries[0], IMAGES.batteries[1]],
+    tags: ["battery", "lipo", "6s", "1400mah", "150c", "graphene", "xt60"],
     isFeature: true,
     isBestseller: true,
     categorySlug: "batteries-chargers",
     specifications: {
-      "Max Charge Power": "300W",
-      "Max Charge Current": "14A",
-      "Input Voltage": "AC 100–240V / DC 12–30V",
-      "Chemistry Support": "LiPo, LiHV, LiIon, NiMH, NiCd, Pb",
-      Display: "Color LCD",
-      "USB Output": "USB-C PD 45W",
-      Weight: "460g",
+      Chemistry: "LiPo / Graphene Enhanced",
+      Configuration: "6S1P (22.2V nominal)",
+      Capacity: "1400 mAh",
+      "C-Rating Continuous": "150C (210A)",
+      "C-Rating Burst": "300C (420A)",
+      "Discharge Lead": "12AWG Silicone wire with XT60",
+      Dimensions: "78 x 38 x 39 mm",
+    },
+  },
+  {
+    name: "SkyVolt D200 Dual-Channel Smart AC/DC Balance Charger",
+    slug: "skyvolt-d200-dual-channel-charger",
+    description:
+      "Dual independent output charger delivering up to 200W on AC or 600W on DC power. Features color IPS display, Bluetooth mobile app monitoring, internal resistance analyzer, and support for LiPo, LiHV, LiFe, and NiMH chemistries.",
+    sku: "AFL-CHG-D200-DUAL",
+    price: 8499,
+    quantity: 40,
+    weight: 580,
+    images: [IMAGES.batteries[1], IMAGES.batteries[0]],
+    tags: ["charger", "balance-charger", "dual-channel", "bluetooth", "ac-dc"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "batteries-chargers",
+    specifications: {
+      "Input Voltage": "AC 100-240V / DC 10-30V",
+      "Charge Power": "AC 200W / DC 600W Total",
+      "Charge Current": "0.1 - 15.0A per channel",
+      "Supported Cells": "1S - 6S LiPo/LiHV",
+      Screen: "2.4-inch Color IPS LCD",
     },
   },
 
-  // ── FPV Cameras & Goggles ─────────────────────────────────────────────────
+  // ── 10. FPV Cameras & Video Systems ─────────────────────────────────────────
   {
-    name: "RunCam Phoenix 2 SP FPV Camera",
-    slug: "runcam-phoenix-2-sp-fpv",
+    name: "DJI O3 Air Unit HD Digital Transmission System",
+    slug: "dji-o3-air-unit-hd-digital",
     description:
-      "The RunCam Phoenix 2 SP is an ultra-wide dynamic range FPV camera with a 1/2-inch Sony 2MP sensor, offering exceptional low-light performance. With 165° FOV, super WDR, and 120fps support at FHD, it provides crisp and smooth FPV footage in all lighting conditions.",
-    sku: "RNC-PHX2-SP-CAM",
-    price: 3299,
-    quantity: 55,
-    weight: 24,
-    images: [
-      "https://images.pexels.com/photos/442589/pexels-photo-442589.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["camera", "fpv", "runcam", "phoenix", "sony", "low-light", "wdr"],
+      "The gold standard in FPV image transmission. Delivers 4K 60fps onboard video recording with RockSteady electronic image stabilization, 10km transmission range, and 28ms ultra-low latency canvas mode OSD integration.",
+    sku: "AFL-CAM-DJI-O3",
+    price: 21999,
+    quantity: 50,
+    weight: 36.4,
+    images: [IMAGES.cameras[0], IMAGES.cameras[1]],
+    tags: ["dji", "o3", "air-unit", "4k60", "hd-digital", "rocksteady"],
     isFeature: true,
     isBestseller: true,
     categorySlug: "fpv-cameras-goggles",
     specifications: {
-      Sensor: "1/2-inch Sony IMX662",
-      Megapixels: 2,
-      FOV: "165°",
-      "Dynamic Range": "Super WDR 120dB",
-      Resolution: "1920x1080 @120fps",
-      "Input Voltage": "5–36V",
-      Weight: "24g",
-      Format: "M12 / CS Lens Mount",
+      "Camera Sensor": "1/1.7-inch CMOS 48MP",
+      "Video Recording": "4K @ 60fps / 2.7K @ 120fps (H.265)",
+      "Live Video Latency": "Down to 28 ms (1080p 100fps)",
+      "Transmission Power": "Up to 33 dBm (FCC)",
+      "Internal Storage": "20 GB High-Speed Flash",
     },
   },
   {
-    name: "Skyzone SKY04X V2 OLED FPV Goggles",
-    slug: "skyzone-sky04x-v2-oled",
+    name: "SkyZone SKY04X PRO OLED 1080p FPV Goggles",
+    slug: "skyzone-sky04x-pro-oled-goggles",
     description:
-      "The Skyzone SKY04X V2 are a premium FPV headset featuring 1280×960 OLED displays with 46 PPD pixel density, a built-in DVR, fan cooling, 72° FOV, and support for multiple video formats (HDMI in, AV in). The Head Tracker module and focus-adjustable lenses make for an immersive flying experience.",
-    sku: "SKY-04XV2-OLED-FPV",
-    price: 36999,
-    quantity: 12,
-    weight: 460,
-    images: [
-      "https://images.pexels.com/photos/8566526/pexels-photo-8566526.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["goggles", "fpv", "skyzone", "oled", "hd", "head-tracker", "dvr"],
+      "Flagship analog & digital FPV goggles with 1920x1080 high-contrast OLED displays, 52° field of view, 60fps DVR, built-in SteadyView 5.8GHz diversity receiver, and HDMI input.",
+    sku: "AFL-GOG-SKY04X-PRO",
+    price: 49999,
+    quantity: 18,
+    weight: 265,
+    images: [IMAGES.cameras[1], IMAGES.cameras[0]],
+    tags: ["goggles", "skyzone", "oled", "1080p", "steadyview", "hdmi"],
     isFeature: true,
     isBestseller: false,
     categorySlug: "fpv-cameras-goggles",
     specifications: {
-      Display: "OLED 1280×960 per eye",
-      FOV: "72°",
-      PPD: "46 PPD",
-      DVR: "Built-in MicroSD",
-      "Video Input": "HDMI, AV",
-      "Head Tracking": "Included",
-      Battery: "18650 (2x included)",
-      Weight: "460g",
-      "Fan Cooling": true,
+      Screens: "Dual 1920x1080 OLED",
+      FOV: "52° Diagonal",
+      "Interpupillary Distance (IPD)": "58 - 71 mm Adjustable",
+      Focus: "-6 to +6 Diopter Adjustable",
+      Receiver: "SteadyView V3.3 48-Channel 5.8GHz",
     },
   },
 
-  // ── Transmitters & Receivers ──────────────────────────────────────────────
+  // ── 11. Radio Transmitters & Receivers ───────────────────────────────────────
   {
-    name: "RadioMaster TX16S Mark II MAX ELRS",
-    slug: "radiomaster-tx16s-mkii-max-elrs",
+    name: "RadioMaster TX16S Mark II Max Radio Transmitter",
+    slug: "radiomaster-tx16s-mk2-max-radio",
     description:
-      "The RadioMaster TX16S Mark II MAX is the gold-standard OpenTX/EdgeTX transmitter for FPV pilots and RC plane enthusiasts. Featuring a built-in ELRS 2.4GHz module, Hall-effect gimbals, 4.3-inch color touchscreen, dual USB-C, and Bluetooth/WiFi telemetry — it's the ultimate radio controller for all skill levels.",
-    sku: "RDMST-TX16SII-MAX-ELRS",
-    price: 19499,
-    quantity: 20,
-    weight: 840,
-    images: [
-      "https://images.pexels.com/photos/8566526/pexels-photo-8566526.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: [
-      "transmitter",
-      "radiomaster",
-      "tx16s",
-      "elrs",
-      "edgetx",
-      "hall-effect",
-    ],
+      "The undisputed benchmark radio transmitter featuring Hall Effect V4.0 gimbals, full CNC aluminum faceplate, internal ExpressLRS 2.4GHz module, EdgeTX touch color interface, and rear USB-C charging.",
+    sku: "AFL-TX-RM-TX16S-MAX",
+    price: 26999,
+    quantity: 35,
+    weight: 820,
+    images: [IMAGES.transmitters[0], IMAGES.transmitters[1]],
+    tags: ["radiomaster", "tx16s", "elrs", "edgetx", "hall-gimbals", "transmitter"],
     isFeature: true,
     isBestseller: true,
     categorySlug: "transmitters-receivers",
     specifications: {
       Channels: 16,
-      Telemetry: "Bluetooth / WiFi",
-      Screen: "4.3-inch Color Touchscreen",
-      Gimbals: "Hall Effect M12",
-      "RF Module": "Internal ELRS 2.4GHz",
-      Firmware: "EdgeTX / OpenTX",
-      Battery: "2x 18650 (included)",
-      Weight: "840g",
-      Charging: "USB-C",
+      Gimbals: "Hall Sensor V4.0 with Quad Bearings",
+      Display: "4.3-inch 480x272 Color Touchscreen",
+      "Internal RF": "ExpressLRS 2.4GHz (Up to 1000mW output)",
+      OS: "EdgeTX Touch Enabled",
+      Battery: "2x 18650 or 2S LiPo Tray",
     },
   },
   {
-    name: "BetaFPV ELRS Nano 2.4GHz Receiver",
-    slug: "betafpv-elrs-nano-24ghz-rx",
+    name: "BetaFPV SuperD ELRS 2.4GHz Diversity Receiver",
+    slug: "betafpv-superd-elrs-diversity-rx",
     description:
-      "The BetaFPV ELRS Nano is a featherlight 1.5g ExpressLRS 2.4GHz receiver ideal for micro quad and 5-inch builds alike. It supports ELRS firmware updates over Betaflight passthrough, features a ceramic antenna for maximum range, and connects via UART at up to 1000Hz link speed.",
-    sku: "BFPV-ELRS-NANO-24-RX",
-    price: 1299,
-    quantity: 120,
-    weight: 1.5,
-    images: [
-      "https://images.pexels.com/photos/4062312/pexels-photo-4062312.jpeg?auto=compress&cs=tinysrgb&w=800",
-    ],
-    tags: ["receiver", "elrs", "betafpv", "nano", "2.4ghz", "ultra-light"],
+      "True dual-channel diversity receiver with TCXO (temperature-compensated crystal oscillator) for rock-solid link reliability in harsh RF environments up to 1000Hz packet rate.",
+    sku: "AFL-RX-BFPV-SUPERD",
+    price: 1899,
+    quantity: 110,
+    weight: 2.2,
+    images: [IMAGES.transmitters[1], IMAGES.transmitters[0]],
+    tags: ["receiver", "elrs", "diversity", "tcxo", "2.4ghz", "long-range"],
     isFeature: false,
     isBestseller: true,
     categorySlug: "transmitters-receivers",
     specifications: {
-      Protocol: "ExpressLRS (ELRS) 2.4GHz",
-      Weight: "1.5g",
-      Antenna: "Ceramic Patch",
-      "Update Rate": "Up to 1000Hz",
-      Telemetry: "Yes",
-      "UART Interface": "RX/TX pads",
-      Voltage: "5V",
-      "Firmware Update": "Betaflight Passthrough / WiFi",
+      Protocol: "ExpressLRS 2.4GHz",
+      Telemetry: "Yes (100mW telemetry power)",
+      Antenna: "Dual Omnidirectional Dipole",
+      Weight: "2.2g",
+    },
+  },
+
+  // ── 12. 3D Filaments & Resins ───────────────────────────────────────────────
+  {
+    name: "AeroCarbon PETG-CF High-Strength Carbon Fiber Filament 1kg",
+    slug: "aerocarbon-petg-cf-filament-1kg",
+    description:
+      "Engineering filament reinforced with 20% high-modulus chopped carbon fiber. Provides superior structural rigidity, dimensional accuracy, matte surface finish, and exceptional layer adhesion for drone canopies and camera mounts.",
+    sku: "AFL-FIL-PETGCF-1KG",
+    price: 2799,
+    quantity: 180,
+    weight: 1000,
+    images: [IMAGES.filaments[0], IMAGES.filaments[1]],
+    tags: ["3d-printing", "filament", "carbon-fiber", "petg-cf", "engineering"],
+    isFeature: true,
+    isBestseller: true,
+    categorySlug: "3d-printing-filaments",
+    specifications: {
+      Diameter: "1.75 mm ± 0.02 mm",
+      "Nozzle Temp": "240°C - 260°C (Hardened Steel Recommended)",
+      "Bed Temp": "75°C - 90°C",
+      "Density": "1.29 g/cm³",
+      "Tensile Strength": "65 MPa",
+    },
+    variants: [
+      { name: "Matte Stealth Black (1kg)", sku: "AFL-FIL-PETGCF-BLK", price: 2799, quantity: 120 },
+      { name: "Gunmetal Gray (1kg)", sku: "AFL-FIL-PETGCF-GRY", price: 2799, quantity: 60 },
+    ],
+  },
+  {
+    name: "FlexiGuard TPU 95A High-Resilience Filament 1kg",
+    slug: "flexiguard-tpu-95a-filament-1kg",
+    description:
+      "Tough, vibration-dampening thermoplastic polyurethane designed specifically for FPV action cam bumpers, antenna mounts, and arm skids. Shore hardness 95A allows easy printing on direct-drive extruders.",
+    sku: "AFL-FIL-TPU95A-1KG",
+    price: 2299,
+    quantity: 140,
+    weight: 1000,
+    images: [IMAGES.filaments[1], IMAGES.filaments[0]],
+    tags: ["tpu", "flexible", "95a", "vibration-dampening", "drone-mounts"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "3d-printing-filaments",
+    specifications: {
+      Hardness: "Shore 95A",
+      "Elongation at Break": "450%",
+      "Nozzle Temp": "215°C - 235°C",
+      "Bed Temp": "30°C - 60°C",
+    },
+  },
+
+  // ── 13. Diagnostics & Workshop Tools ─────────────────────────────────────────
+  {
+    name: "AeroPulse RF Power Meter & Spectrum Analyzer (0.1 - 6 GHz)",
+    slug: "aeropulse-rf-power-meter-analyzer",
+    description:
+      "Handheld RF power meter and 5.8GHz channel scanner designed to measure true VTX output power, antenna VSWR efficiency, and RF interference before takeoff.",
+    sku: "AFL-TOOL-RF-METER",
+    price: 5499,
+    quantity: 45,
+    weight: 180,
+    images: [IMAGES.tools[0], IMAGES.tools[1]],
+    tags: ["tools", "rf-meter", "vtx-tester", "spectrum-analyzer", "diagnostics"],
+    isFeature: true,
+    isBestseller: false,
+    categorySlug: "tools-and-diagnostics",
+    specifications: {
+      "Frequency Range": "100 MHz - 6.0 GHz",
+      "Power Range": "-45 dBm to +30 dBm (1W)",
+      Connectors: "SMA Female 50 Ohm",
+      Battery: "Internal 1200mAh Li-Po (USB-C Rechargeable)",
+    },
+  },
+  {
+    name: "TS101 Smart Digital Soldering Iron 65W Kit",
+    slug: "ts101-smart-digital-soldering-iron-kit",
+    description:
+      "Portable DC/PD powered smart soldering iron with OLED display, PID temperature control from 50°C to 400°C, and turbo boost mode. Includes B2 and BC2 precision tips for delicate micro-soldering.",
+    sku: "AFL-TOOL-TS101-KIT",
+    price: 4299,
+    quantity: 75,
+    weight: 160,
+    images: [IMAGES.tools[1], IMAGES.tools[0]],
+    tags: ["soldering-iron", "ts101", "pd65w", "portable", "electronics-repair"],
+    isFeature: false,
+    isBestseller: true,
+    categorySlug: "tools-and-diagnostics",
+    specifications: {
+      "Max Power": "DC 65W / USB-PD 45W",
+      "Temp Stability": "± 2°C",
+      "Heating Time": "9 seconds from room temp to 300°C",
+      Interface: "USB-C with PD 3.0 / QC Support",
     },
   },
 ];
 
-// ─── Admin Data ───────────────────────────────────────────────────────────────
+// ─── Seed Helper Functions ───────────────────────────────────────────────────
 
-async function createDefaultAdmin() {
-  const adminCount = await prisma.admin.count();
+async function seedAdmin() {
+  console.log("👤 Seeding Administrator account...");
+  const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || "admin@aeroforge.dev";
+  const hashedPassword = await bcrypt.hash(
+    process.env.DEFAULT_ADMIN_PASSWORD || "admin123",
+    10,
+  );
 
-  if (adminCount === 0) {
-    const hashedPassword = await bcrypt.hash(
-      process.env.DEFAULT_ADMIN_PASSWORD || "admin123",
-      10,
-    );
-
-    await prisma.admin.create({
-      data: {
-        email:
-          process.env.DEFAULT_ADMIN_EMAIL || "admin@aeroforge.dev",
-        password: hashedPassword,
-        name: "AeroForge Admin",
-        role: "ADMIN",
-      },
-    });
-    console.log("✅ Default admin account created.");
-  } else {
-    console.log("ℹ️  Admin already exists, skipping.");
-  }
+  await prisma.admin.upsert({
+    where: { email: adminEmail },
+    update: {
+      name: "AeroForge Admin",
+      password: hashedPassword,
+      role: "ADMIN",
+    },
+    create: {
+      email: adminEmail,
+      name: "AeroForge Admin",
+      password: hashedPassword,
+      role: "ADMIN",
+    },
+  });
+  console.log(`✅ Administrator ready: ${adminEmail}`);
 }
 
-// ─── Seed Functions ───────────────────────────────────────────────────────────
+async function seedDemoUsers() {
+  console.log("👥 Seeding Demo Users & Addresses...");
+
+  const demoUsers = [
+    {
+      clerkUserId: "user_demo_pilot_01",
+      name: "Alex Mercer",
+      email: "alex.mercer@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 98765 43210",
+      address: {
+        firstName: "Alex",
+        lastName: "Mercer",
+        address1: "742 Aeroway Boulevard, Tech Park",
+        city: "Bengaluru",
+        state: "Karnataka",
+        zipCode: "560100",
+        country: "India",
+        phone: "+91 98765 43210",
+        isDefault: true,
+      },
+    },
+    {
+      clerkUserId: "user_demo_engineer_02",
+      name: "Sarah Chen",
+      email: "sarah.chen@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 98123 45678",
+      address: {
+        firstName: "Sarah",
+        lastName: "Chen",
+        address1: "Flat 402, Cyber Heights, Gachibowli",
+        city: "Hyderabad",
+        state: "Telangana",
+        zipCode: "500032",
+        country: "India",
+        phone: "+91 98123 45678",
+        isDefault: true,
+      },
+    },
+    {
+      clerkUserId: "user_demo_surveyor_03",
+      name: "Marcus Vance",
+      email: "marcus.vance@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 97654 32109",
+      address: {
+        firstName: "Marcus",
+        lastName: "Vance",
+        address1: "Plot 18, MIDC Industrial Area",
+        city: "Pune",
+        state: "Maharashtra",
+        zipCode: "411019",
+        country: "India",
+        phone: "+91 97654 32109",
+        isDefault: true,
+      },
+    },
+  ];
+
+  const createdUsers = [];
+
+  for (const u of demoUsers) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {
+        name: u.name,
+        clerkUserId: u.clerkUserId,
+        imageUrl: u.imageUrl,
+        phone: u.phone,
+      },
+      create: {
+        email: u.email,
+        name: u.name,
+        clerkUserId: u.clerkUserId,
+        imageUrl: u.imageUrl,
+        phone: u.phone,
+      },
+    });
+
+    // Check default address
+    const existingAddr = await prisma.address.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (!existingAddr) {
+      await prisma.address.create({
+        data: {
+          ...u.address,
+          userId: user.id,
+        },
+      });
+    }
+
+    createdUsers.push(user);
+  }
+
+  console.log(`✅ ${createdUsers.length} Demo users ready with address books.`);
+  return createdUsers;
+}
 
 async function seedCategories() {
-  console.log("🌱 Seeding categories...");
+  console.log("📂 Seeding Categories...");
 
-  // Upsert each category by slug to avoid duplicate key errors on re-runs
   for (const cat of categoriesData) {
     await prisma.category.upsert({
       where: { slug: cat.slug },
@@ -881,80 +986,254 @@ async function seedCategories() {
 }
 
 async function seedProducts() {
-  console.log("🌱 Seeding products...");
+  console.log("📦 Seeding Products and Variants in bulk...");
 
-  // Build a slug → id map for categories
   const categories = await prisma.category.findMany({
     select: { id: true, slug: true },
   });
   const categoryMap = Object.fromEntries(
-    categories.map((category: { slug: string; id: string }) => [
-      category.slug,
-      category.id,
-    ]),
-  ) as Record<string, string>;
+    categories.map((c) => [c.slug, c.id]),
+  );
 
   let created = 0;
-  let skipped = 0;
+  let updated = 0;
 
   for (const prod of productsData) {
     const categoryId = categoryMap[prod.categorySlug];
     if (!categoryId) {
-      console.warn(
-        `⚠️  No category found for slug '${prod.categorySlug}', skipping product '${prod.name}'`,
-      );
-      skipped++;
-      continue;
-    }
-
-    // Check if product already exists by slug
-    const existing = await prisma.product.findUnique({
-      where: { slug: prod.slug },
-    });
-
-    if (existing) {
-      skipped++;
+      console.warn(`⚠️ Skipping ${prod.name} (category '${prod.categorySlug}' not found)`);
       continue;
     }
 
     const { variants, categorySlug, specifications, ...productData } = prod;
 
-    const createdProduct = await prisma.product.create({
-      data: {
-        ...productData,
-        categoryId,
-        specifications: specifications ?? undefined,
-        variants: variants
-          ? {
-              create: variants.map((v) => ({
-                name: v.name,
-                sku: v.sku,
-                price: v.price ?? null,
-                quantity: v.quantity,
-                image: v.image ?? null,
-              })),
-            }
-          : undefined,
+    const existing = await prisma.product.findUnique({
+      where: { slug: prod.slug },
+    });
+
+    if (existing) {
+      await prisma.product.update({
+        where: { id: existing.id },
+        data: {
+          ...productData,
+          categoryId,
+          specifications: specifications ?? undefined,
+        },
+      });
+      updated++;
+    } else {
+      await prisma.product.create({
+        data: {
+          ...productData,
+          categoryId,
+          specifications: specifications ?? undefined,
+          variants: variants
+            ? {
+                create: variants.map((v) => ({
+                  name: v.name,
+                  sku: v.sku,
+                  price: v.price ?? null,
+                  quantity: v.quantity,
+                  image: v.image ?? null,
+                })),
+              }
+            : undefined,
+        },
+      });
+      created++;
+    }
+  }
+
+  console.log(`✅ Products ready: ${created} created, ${updated} updated.`);
+}
+
+async function seedReviews(users: { id: string; name: string }[]) {
+  console.log("⭐ Seeding Product Reviews...");
+
+  const products = await prisma.product.findMany({
+    take: 8,
+    select: { id: true, name: true },
+  });
+
+  const reviewTemplates = [
+    {
+      rating: 5,
+      title: "Incredible build quality and performance!",
+      comment:
+        "The throttle response is butter smooth and the carbon weave is flawless. Easily the best quad I've flown this season.",
+    },
+    {
+      rating: 5,
+      title: "Rock solid telemetry and range.",
+      comment:
+        "Paired this with my ELRS setup and had 0 packet loss even behind thick tree canopy. Highly recommended!",
+    },
+    {
+      rating: 4,
+      title: "Great value for money.",
+      comment:
+        "Solid components and well soldered. Arrived on time and worked out of the box with Betaflight 4.5.",
+    },
+  ];
+
+  let reviewCount = 0;
+  for (let i = 0; i < products.length; i++) {
+    const prod = products[i];
+    const user = users[i % users.length];
+    const template = reviewTemplates[i % reviewTemplates.length];
+
+    const existingReview = await prisma.review.findUnique({
+      where: {
+        userId_productId: {
+          userId: user.id,
+          productId: prod.id,
+        },
       },
     });
 
-    console.log(`  ✓ Created: ${createdProduct.name}`);
-    created++;
+    if (!existingReview) {
+      await prisma.review.create({
+        data: {
+          userId: user.id,
+          productId: prod.id,
+          rating: template.rating,
+          title: template.title,
+          comment: template.comment,
+          isVerified: true,
+          isApproved: true,
+        },
+      });
+      reviewCount++;
+    }
   }
 
-  console.log(`\n✅ Products seeded: ${created} created, ${skipped} skipped.`);
+  console.log(`✅ ${reviewCount} product reviews seeded.`);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+async function seedServiceOrders(users: { id: string }[]) {
+  console.log("🛠️  Seeding 3D Print and Repair Service Orders...");
+
+  if (users.length === 0) return;
+  const user = users[0];
+
+  // 1. Seed 3D Print Order
+  const printNumber = "PRN-2026-0801";
+  const existingPrint = await prisma.printOrder.findUnique({
+    where: { printNumber },
+  });
+
+  if (!existingPrint) {
+    await prisma.printOrder.create({
+      data: {
+        printNumber,
+        userId: user.id,
+        status: PrintStatus.PRINTING,
+        fileName: "gopro12_hero_mount_25deg.stl",
+        fileUrl: "https://aeroforge-labs.vercel.app/demo/gopro12_mount.stl",
+        fileSize: 4280000, // 4.28MB
+        material: PrintMaterial.TPU,
+        color: "Stealth Black",
+        infill: 40,
+        layerHeight: 0.2,
+        estimatedCost: 1250,
+        finalCost: 1250,
+        paidAmount: 1250,
+        customerNotes: "Please print with 100% infill around the base screw holes for high crash resilience.",
+        adminNotes: "Printing on Bambu X1-Carbon with high-temp TPU profile. 3.5 hrs remaining.",
+      },
+    });
+  }
+
+  // 2. Seed Repair Order
+  const repairNumber = "REP-2026-0902";
+  const existingRepair = await prisma.repairOrder.findUnique({
+    where: { repairNumber },
+  });
+
+  if (!existingRepair) {
+    await prisma.repairOrder.create({
+      data: {
+        repairNumber,
+        userId: user.id,
+        status: RepairStatus.IN_PROGRESS,
+        deviceType: "FPV Racing Drone",
+        deviceBrand: "AeroForge",
+        deviceModel: "X-500 Carbon Pro",
+        issueDescription: "Crashed into concrete pillar. Arm 3 snapped and Motor #3 is desoldered and missing bell.",
+        images: [IMAGES.racingDrones[0], IMAGES.motors[0]],
+        diagnosisNotes: "Verified carbon delamination on rear right arm. FC and ESC tested 100% healthy on current limiter.",
+        repairNotes: "Replaced 6mm carbon arm, installed new 2207 1950KV motor, calibrated gyro and test hovered.",
+        estimatedCost: 3800,
+        finalCost: 3800,
+        paidAmount: 3800,
+        laborHours: 1.5,
+        laborRate: 1000,
+      },
+    });
+  }
+
+  // 3. Seed Sample E-Commerce Order
+  const orderNumber = "ORD-2026-1003";
+  const existingOrder = await prisma.order.findUnique({
+    where: { orderNumber },
+  });
+
+  if (!existingOrder) {
+    const firstProduct = await prisma.product.findFirst({
+      where: { slug: "aeroforge-x500-carbon-pro-5inch" },
+    });
+
+    const userAddress = await prisma.address.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (firstProduct) {
+      await prisma.order.create({
+        data: {
+          orderNumber,
+          userId: user.id,
+          status: OrderStatus.CONFIRMED,
+          paymentStatus: PaymentStatus.PAID,
+          subtotal: firstProduct.price,
+          taxAmount: Math.round(firstProduct.price * 0.18),
+          shippingAmount: 0,
+          totalAmount: Math.round(firstProduct.price * 1.18),
+          currency: "INR",
+          addressId: userAddress?.id,
+          paymentMethod: "Razorpay (UPI / Card)",
+          paymentIntentId: "pay_demo_rzp_order_9812739",
+          items: {
+            create: [
+              {
+                productId: firstProduct.id,
+                quantity: 1,
+                price: firstProduct.price,
+                name: firstProduct.name,
+                image: firstProduct.images[0],
+              },
+            ],
+          },
+        },
+      });
+    }
+  }
+
+  console.log("✅ Sample Print, Repair, and E-commerce Orders seeded.");
+}
+
+// ─── Main Execution ──────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("🚀 Starting database seed...\n");
+  console.log("🚀 Starting AeroForge Labs dynamic bulk database seed...\n");
 
-  await createDefaultAdmin();
+  await seedAdmin();
+  const users = await seedDemoUsers();
   await seedCategories();
   await seedProducts();
+  await seedReviews(users);
+  await seedServiceOrders(users);
 
-  console.log("\n🎉 Seed complete!");
+  console.log("\n✨ Database successfully populated with rich, dynamic catalog & mock data!");
 }
 
 main()

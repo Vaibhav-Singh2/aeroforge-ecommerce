@@ -45,19 +45,31 @@ export default async function CategoryPage({
   params: Promise<{ slug: "projects" | "parts-and-accessories" }>;
   searchParams: Promise<{ page?: string; sort?: string; q?: string }>;
 }) {
-  const [type, category] = (await params).slug;
-  const awaitedSearchParams = await searchParams;
-  const currentPage = awaitedSearchParams.page
-    ? parseInt(awaitedSearchParams.page)
-    : 1;
-  const itemsPerPage = 15;
-  const sortOption = awaitedSearchParams.sort || "newest";
+  const rawSlug = (await params).slug;
+  let type = rawSlug[0];
+  let category = rawSlug[1];
 
-  // Search query from URL
-  const searchQuery = awaitedSearchParams.q || "";
-
-  if (type !== "projects" && type !== "parts-and-accessories") {
-    notFound();
+  // Resolve aliases and direct category slugs
+  if (type === "drones") {
+    type = "projects";
+  } else if (type === "planes") {
+    type = "projects";
+    category = category || "rc-planes";
+  } else if (type === "accessories" || type === "parts") {
+    type = "parts-and-accessories";
+  } else if (type !== "projects" && type !== "parts-and-accessories") {
+    const directCategory = await prisma.category.findUnique({
+      where: { slug: type },
+    });
+    if (directCategory) {
+      type =
+        directCategory.type === "READY_MADE_PROJECT"
+          ? "projects"
+          : "parts-and-accessories";
+      category = directCategory.slug;
+    } else {
+      notFound();
+    }
   }
 
   const categoryList: CategoryItem[] = await prisma.category.findMany({
