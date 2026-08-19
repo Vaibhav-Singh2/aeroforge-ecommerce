@@ -491,7 +491,7 @@ const productsData: ProductSeed[] = [
     },
     variants: [
       { name: "1950KV (Optimized for 6S LiPo)", sku: "AFL-MOT-2207-1950KV", price: 1899, quantity: 100 },
-      { name: "2550KV (Optimized for 4S LiPo)", sku: "AFL-MOT-2207-2550KV", price: 1899, quantity: 50 },
+      { name: "2550KV (Optimized for 4S LiPo)", sku: "AFL-MOT-2207-2550KV", price: 2199, quantity: 45 },
     ],
   },
   {
@@ -633,6 +633,10 @@ const productsData: ProductSeed[] = [
       "Discharge Lead": "12AWG Silicone wire with XT60",
       Dimensions: "78 x 38 x 39 mm",
     },
+    variants: [
+      { name: "6S 1400mAh 150C (Standard)", sku: "AFL-BAT-6S-1400-150C", price: 3199, quantity: 80 },
+      { name: "6S 1550mAh 150C (Extended Capacity)", sku: "AFL-BAT-6S-1550-150C", price: 3699, quantity: 40 },
+    ],
   },
   {
     name: "SkyVolt D200 Dual-Channel Smart AC/DC Balance Charger",
@@ -773,7 +777,7 @@ const productsData: ProductSeed[] = [
     },
     variants: [
       { name: "Matte Stealth Black (1kg)", sku: "AFL-FIL-PETGCF-BLK", price: 2799, quantity: 120 },
-      { name: "Gunmetal Gray (1kg)", sku: "AFL-FIL-PETGCF-GRY", price: 2799, quantity: 60 },
+      { name: "Heavy-Duty Bulk Spool (3kg)", sku: "AFL-FIL-PETGCF-3KG", price: 6999, quantity: 35 },
     ],
   },
   {
@@ -796,6 +800,10 @@ const productsData: ProductSeed[] = [
       "Nozzle Temp": "215°C - 235°C",
       "Bed Temp": "30°C - 60°C",
     },
+    variants: [
+      { name: "Stealth Black (1kg Spool)", sku: "AFL-FIL-TPU95A-BLK", price: 2299, quantity: 90 },
+      { name: "Signal Neon Yellow (1kg Spool)", sku: "AFL-FIL-TPU95A-YLW", price: 2499, quantity: 50 },
+    ],
   },
 
   // ── 13. Diagnostics & Workshop Tools ─────────────────────────────────────────
@@ -928,6 +936,60 @@ async function seedDemoUsers() {
         isDefault: true,
       },
     },
+    {
+      clerkUserId: "user_demo_pilot_04",
+      name: "Priya Sharma",
+      email: "priya.sharma@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 98220 11223",
+      address: {
+        firstName: "Priya",
+        lastName: "Sharma",
+        address1: "Tower B, Aero Vista Residency",
+        city: "New Delhi",
+        state: "Delhi",
+        zipCode: "110037",
+        country: "India",
+        phone: "+91 98220 11223",
+        isDefault: true,
+      },
+    },
+    {
+      clerkUserId: "user_demo_pilot_05",
+      name: "Rohan Kulkarni",
+      email: "rohan.kulkarni@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 98334 55667",
+      address: {
+        firstName: "Rohan",
+        lastName: "Kulkarni",
+        address1: "Lane 4, Koregaon Park",
+        city: "Pune",
+        state: "Maharashtra",
+        zipCode: "411001",
+        country: "India",
+        phone: "+91 98334 55667",
+        isDefault: true,
+      },
+    },
+    {
+      clerkUserId: "user_demo_pilot_06",
+      name: "Ananya Iyer",
+      email: "ananya.iyer@example.com",
+      imageUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80",
+      phone: "+91 98441 77889",
+      address: {
+        firstName: "Ananya",
+        lastName: "Iyer",
+        address1: "12th Cross, Indiranagar",
+        city: "Bengaluru",
+        state: "Karnataka",
+        zipCode: "560038",
+        country: "India",
+        phone: "+91 98441 77889",
+        isDefault: true,
+      },
+    },
   ];
 
   const createdUsers = [];
@@ -950,7 +1012,6 @@ async function seedDemoUsers() {
       },
     });
 
-    // Check default address
     const existingAddr = await prisma.address.findFirst({
       where: { userId: user.id },
     });
@@ -1048,66 +1109,101 @@ async function seedProducts() {
 }
 
 async function seedReviews(users: { id: string; name: string }[]) {
-  console.log("⭐ Seeding Product Reviews...");
+  console.log("⭐ Seeding Product Reviews in bulk across catalog...");
 
   const products = await prisma.product.findMany({
-    take: 8,
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
   });
 
   const reviewTemplates = [
     {
       rating: 5,
-      title: "Incredible build quality and performance!",
+      title: "Incredible build quality and flight response!",
       comment:
-        "The throttle response is butter smooth and the carbon weave is flawless. Easily the best quad I've flown this season.",
+        "The throttle response is butter smooth and the carbon weave is flawless. Easily the best quad I've flown this season with zero propwash oscillation.",
     },
     {
       rating: 5,
-      title: "Rock solid telemetry and range.",
+      title: "Rock-solid telemetry and impressive ELRS range.",
       comment:
-        "Paired this with my ELRS setup and had 0 packet loss even behind thick tree canopy. Highly recommended!",
+        "Paired this with my ELRS 2.4GHz setup and had 0 packet loss even behind thick tree canopy. Video feed on DJI O3 was crystal clear.",
+    },
+    {
+      rating: 5,
+      title: "Super clean soldering and factory PID tune.",
+      comment:
+        "Arrived pre-flashed with Betaflight 4.5. The default PID profile flew like it was on rails right out of the box!",
     },
     {
       rating: 4,
-      title: "Great value for money.",
+      title: "Great value for money and solid durability.",
       comment:
-        "Solid components and well soldered. Arrived on time and worked out of the box with Betaflight 4.5.",
+        "Survived three heavy tumble crashes on asphalt with only a bent propeller. Chamfered carbon edges really protect the motor wires well.",
+    },
+    {
+      rating: 5,
+      title: "Smooth brushless bearings & high efficiency.",
+      comment:
+        "Running these on a 6S 1300mAh pack gives me an extra 45 seconds of aggressive freestyle time compared to my previous motor set.",
+    },
+    {
+      rating: 4,
+      title: "Very reliable avionics, fast shipping to Bangalore.",
+      comment:
+        "Express delivery arrived in 2 days. Solder pads are large, well-spaced, and pre-tinned cleanly. Highly recommended.",
+    },
+    {
+      rating: 3,
+      title: "Decent performance, needed slight PID adjustments for wind.",
+      comment:
+        "Flies great on calm days, but required bumping D-term slightly in 25km/h gusty coastal winds. Overall quite satisfied.",
+    },
+    {
+      rating: 5,
+      title: "Essential addition to my field repair kit.",
+      comment:
+        "High quality precision CNC machining. Tolerances on the hex drivers fit snug without stripping aluminum titanium hardware.",
     },
   ];
 
   let reviewCount = 0;
-  for (let i = 0; i < products.length; i++) {
-    const prod = products[i];
-    const user = users[i % users.length];
-    const template = reviewTemplates[i % reviewTemplates.length];
 
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        userId_productId: {
-          userId: user.id,
-          productId: prod.id,
-        },
-      },
-    });
+  for (let pIdx = 0; pIdx < products.length; pIdx++) {
+    const prod = products[pIdx];
+    // Seed 2 to 4 reviews per product from different users
+    const numReviewsForProduct = 2 + (pIdx % 3);
 
-    if (!existingReview) {
-      await prisma.review.create({
-        data: {
-          userId: user.id,
-          productId: prod.id,
-          rating: template.rating,
-          title: template.title,
-          comment: template.comment,
-          isVerified: true,
-          isApproved: true,
+    for (let uIdx = 0; uIdx < numReviewsForProduct; uIdx++) {
+      const user = users[(pIdx + uIdx) % users.length];
+      const template = reviewTemplates[(pIdx * 2 + uIdx) % reviewTemplates.length];
+
+      const existingReview = await prisma.review.findUnique({
+        where: {
+          userId_productId: {
+            userId: user.id,
+            productId: prod.id,
+          },
         },
       });
-      reviewCount++;
+
+      if (!existingReview) {
+        await prisma.review.create({
+          data: {
+            userId: user.id,
+            productId: prod.id,
+            rating: template.rating,
+            title: template.title,
+            comment: template.comment,
+            isVerified: true,
+            isApproved: true,
+          },
+        });
+        reviewCount++;
+      }
     }
   }
 
-  console.log(`✅ ${reviewCount} product reviews seeded.`);
+  console.log(`✅ ${reviewCount} product reviews seeded across ${products.length} products.`);
 }
 
 async function seedServiceOrders(users: { id: string }[]) {
