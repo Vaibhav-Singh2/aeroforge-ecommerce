@@ -5,6 +5,9 @@ import { Toaster } from "sonner";
 import { SiteHeader } from "@/components/layouts/site-header";
 import { SiteFooter } from "@/components/layouts/site-footer";
 import { DemoBanner } from "@/components/layouts/demo-banner";
+import { CartDrawer } from "@/components/cart/cart-drawer";
+import { WishlistDrawer } from "@/components/wishlist/wishlist-drawer";
+import { CommandMenu } from "@/components/search/command-menu";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { ClerkThemeProvider } from "@/components/providers/clerk-theme-provider";
@@ -87,6 +90,9 @@ export default function RootLayout({
                 <main className="flex-1">{children}</main>
                 <SiteFooter />
               </div>
+              <CartDrawer />
+              <WishlistDrawer />
+              <CommandMenu />
             </ReduxProvider>
             <Toaster />
           </ClerkThemeProvider>

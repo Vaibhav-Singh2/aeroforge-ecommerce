@@ -35,6 +35,32 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      // allow all images from Clerk avatars
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.clerk.dev",
+        port: "",
+        pathname: "/**",
+      },
+      // allow Google & GitHub OAuth avatars
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
       // allow all remote images from the Vercel Blob domain
       {
         protocol: "https",
@@ -49,7 +75,13 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      // allow all images from bvchjdsex1t3pg17.public.blob.vercel-storage.com
+      // allow all images from any public vercel-storage domain
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "bvchjdsex1t3pg17.public.blob.vercel-storage.com",

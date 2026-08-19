@@ -5,7 +5,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { addCartItem } from "@/lib/redux/features/cartSlice";
+import { addCartItem, openCart } from "@/lib/redux/features/cartSlice";
 import { addToast } from "@/lib/redux/features/uiSlice";
 import { addToCart } from "@/lib/actions/cart-actions";
 
@@ -75,6 +75,9 @@ export function AddToCartButton({
           product,
         }),
       );
+
+      // Open quick cart drawer
+      dispatch(openCart());
 
       // Show success notification
       dispatch(

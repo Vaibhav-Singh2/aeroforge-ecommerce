@@ -18,16 +18,20 @@ const navItems: Array<{ title: string; href: string }> = [
     href: "/category/parts-and-accessories",
   },
   {
+    title: "Drone Builder",
+    href: "/builder",
+  },
+  {
     title: "Repair Services",
     href: "/services/repair",
   },
   {
-    title: "3D Printing Services",
+    title: "3D Printing",
     href: "/services/3d-printing",
   },
   {
-    title: "Account",
-    href: "/account",
+    title: "Compare",
+    href: "/compare",
   },
 ];
 
