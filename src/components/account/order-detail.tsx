@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OrderTimelineStepper } from "@/components/account/order-timeline-stepper";
+import { InvoiceModal } from "@/components/account/invoice-modal";
 
 // Helper function to get status badge variant
 function getStatusBadgeVariant(status: OrderStatus) {
@@ -189,6 +191,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
+            <InvoiceModal order={order} />
           </div>
         </div>
 
@@ -198,13 +201,24 @@ export function OrderDetail({ order }: OrderDetailProps) {
           <Card className="md:col-span-2">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between text-base">
-                Order Status
+                Order Status & Fulfillment
                 <Badge variant={getStatusBadgeVariant(order.status)}>
                   {formatStatus(order.status)}
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-5">
+              {/* Visual Delivery Stepper */}
+              <div className="rounded-xl border bg-muted/20 p-4">
+                <OrderTimelineStepper
+                  status={order.status}
+                  createdAt={order.createdAt}
+                  shippedAt={order.shippedAt}
+                  deliveredAt={order.deliveredAt}
+                  trackingNumber={order.trackingNumber}
+                />
+              </div>
+
               <div className="text-sm">
                 <p className="font-medium">Order placed</p>
                 <p className="text-muted-foreground">

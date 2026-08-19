@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Model3DViewer } from "@/components/services/model-3d-viewer";
 
 export default function PrintingServicesPage() {
   const [projectName, setProjectName] = useState("");
@@ -170,6 +171,19 @@ export default function PrintingServicesPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Interactive 3D CAD Mesh & Slicing Studio */}
+      <div className="mb-14">
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            Interactive 3D CAD Mesh & Slicing Studio
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Interact with sample drone aerodynamic components, test wireframes & layer slicing, and preview TPU & Carbon Fiber filament finishes in real-time WebGL.
+          </p>
+        </div>
+        <Model3DViewer />
       </div>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">

@@ -12,15 +12,9 @@ import { cancelOrder } from "@/lib/actions/order-actions";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InvoiceModal } from "@/components/account/invoice-modal";
 
 // Helper function to get status badge variant
 function getStatusBadgeVariant(status: OrderStatus) {
@@ -231,13 +225,15 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex-wrap gap-4 border-t px-6 py-4">
+              <CardFooter className="flex-wrap gap-3 border-t px-6 py-4">
                 <Button asChild variant="outline" size="sm" className="gap-1">
                   <Link href={`/account/orders/${order.id}`}>
                     View Details
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
+
+                <InvoiceModal order={order} />
 
                 {(order.status === "PENDING" ||
                   order.status === "CONFIRMED") && (

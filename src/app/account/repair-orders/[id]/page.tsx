@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import { RepairDiagnosticSheet } from "@/components/account/repair-diagnostic-sheet";
 import Image from "next/image";
 
 // This would normally come from your API
@@ -314,6 +315,12 @@ export default function RepairOrderDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Interactive Diagnostic Bench Sheet */}
+          <RepairDiagnosticSheet
+            repairNumber={order.repairNumber}
+            deviceModel={order.deviceModel}
+          />
 
           {order.partsUsed && order.partsUsed.length > 0 && (
             <Card>
