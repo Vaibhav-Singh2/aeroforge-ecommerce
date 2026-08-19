@@ -3,6 +3,8 @@ import cartReducer from "./features/cartSlice";
 import userReducer from "./features/userSlice";
 import productReducer from "./features/productSlice";
 import uiReducer from "./features/uiSlice";
+import wishlistReducer from "./features/wishlistSlice";
+import compareReducer from "./features/compareSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -11,6 +13,8 @@ export const makeStore = () => {
       user: userReducer,
       product: productReducer,
       ui: uiReducer,
+      wishlist: wishlistReducer,
+      compare: compareReducer,
     }, // Adding middleware to handle serialization issues with MongoDB ObjectId and Date objects
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
