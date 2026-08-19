@@ -39,15 +39,15 @@ export function MainNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden gap-6 lg:flex">
+    <nav className="hidden gap-3 xl:gap-5 lg:flex items-center">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           className={cn(
-            "hover:text-primary text-sm font-medium transition-colors",
+            "hover:text-primary text-xs xl:text-sm font-medium transition-colors whitespace-nowrap",
             pathname === item.href
-              ? "text-foreground"
+              ? "text-foreground font-semibold"
               : "text-muted-foreground",
           )}
         >

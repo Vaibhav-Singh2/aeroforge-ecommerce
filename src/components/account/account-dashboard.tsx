@@ -51,14 +51,14 @@ export function AccountDashboard() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl py-10">
-      <h1 className="mb-8 text-3xl font-bold">My Account</h1>
+    <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
+      <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl font-bold">My Account</h1>
       {/* User profile summary */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Welcome back, {user.firstName || user.username}</CardTitle>
+      <Card className="mb-6 sm:mb-8">
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-lg sm:text-xl">Welcome back, {user.firstName || user.username}</CardTitle>
           <CardDescription>
-            Manage your account and view your order history
+            Manage your account, flight telemetry, and order history
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">

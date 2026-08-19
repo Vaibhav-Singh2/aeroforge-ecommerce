@@ -71,7 +71,7 @@ export function ProductCard({
         </Link>
 
         {/* Floating Quick Actions */}
-        <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5 transition-opacity duration-200 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
           <WishlistButton product={product} />
           <QuickViewDialog product={product} />
         </div>

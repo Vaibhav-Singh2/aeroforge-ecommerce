@@ -392,11 +392,11 @@ export function DroneBuilderStudio() {
       </div>
 
       {/* Main Studio Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Left Side: Step-by-Step Hardware Configurator */}
         <div className="lg:col-span-7 space-y-6">
           {/* Step Selector Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 border-b">
+          <div className="flex gap-2 overflow-x-auto pb-2 border-b scrollbar-none touch-pan-x -mx-1 px-1">
             {steps.map((step) => {
               const isSelected = activeStep === step.id;
               const Icon = step.icon;
@@ -404,7 +404,7 @@ export function DroneBuilderStudio() {
                 <button
                   key={step.id}
                   onClick={() => setActiveStep(step.id as any)}
-                  className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                     isSelected
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -514,7 +514,7 @@ export function DroneBuilderStudio() {
         </div>
 
         {/* Right Side: Live Physics Telemetry & Pricing Dashboard */}
-        <div className="lg:col-span-5 space-y-5">
+        <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24">
           <Card className="rounded-2xl border shadow-xl bg-card/70 backdrop-blur-md overflow-hidden">
             <div className="bg-muted/40 p-4 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">

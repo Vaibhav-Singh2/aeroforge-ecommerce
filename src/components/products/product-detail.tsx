@@ -22,6 +22,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductReviewsSection } from "@/components/products/product-reviews-section";
+import { WishlistButton } from "@/components/wishlist/wishlist-button";
+import { toast } from "sonner";
 
 // Extended types for the product with its relations
 
@@ -321,52 +323,53 @@ export function ProductDetail({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <AddToCartButton
               product={productWithSlug}
               quantity={quantity}
               variantId={selectedVariant?.id}
               size="default"
-              className="flex-1 gap-2 sm:min-w-50 sm:flex-none"
+              className="flex-1 gap-2 h-11 text-sm font-semibold"
             />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={async () => {
-                const shareUrl =
-                  typeof window !== "undefined" ? window.location.href : "";
-                const shareData = {
-                  title: product.name,
-                  text:
-                    product.description?.slice(0, 100) ||
-                    "Check out this product!",
-                  url: shareUrl,
-                };
-                if (navigator.share) {
-                  try {
-                    await navigator.share(shareData);
-                  } catch (err) {
-                    console.error("Error sharing:", err);
-                    alert("Failed to share product");
+            <div className="flex items-center gap-2">
+              <WishlistButton product={productWithSlug} variant="full" className="h-11 flex-1 sm:flex-none text-xs" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0"
+                onClick={async () => {
+                  const shareUrl =
+                    typeof window !== "undefined" ? window.location.href : "";
+                  const shareData = {
+                    title: product.name,
+                    text:
+                      product.description?.slice(0, 100) ||
+                      "Check out this product!",
+                    url: shareUrl,
+                  };
+                  if (navigator.share) {
+                    try {
+                      await navigator.share(shareData);
+                    } catch (err) {
+                      console.warn("Share cancelled:", err);
+                    }
+                  } else if (navigator.clipboard) {
+                    try {
+                      await navigator.clipboard.writeText(shareUrl);
+                      toast.success("Product link copied to clipboard!");
+                    } catch (err) {
+                      console.error("Error copying link:", err);
+                      toast.error("Failed to copy link");
+                    }
                   }
-                } else if (navigator.clipboard) {
-                  try {
-                    await navigator.clipboard.writeText(shareUrl);
-                    // Optionally show a toast/alert
-                    alert("Link copied to clipboard!");
-                  } catch (err) {
-                    console.error("Error copying link:", err);
-                    alert("Failed to copy link");
-                  }
-                } else {
-                  alert("Sharing not supported on this device.");
-                }
-              }}
-              aria-label="Share"
-            >
-              <Share2 className="h-4 w-4" />
-              <span className="sr-only">Share</span>
-            </Button>
+                }}
+                aria-label="Share"
+                title="Share product link"
+              >
+                <Share2 className="h-4 w-4" />
+                <span className="sr-only">Share</span>
+              </Button>
+            </div>
           </div>
 
           {/* Shipping & Returns */}

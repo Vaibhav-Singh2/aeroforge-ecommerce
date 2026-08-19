@@ -112,7 +112,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   // Render empty state if no orders
   if (orders.length === 0) {
     return (
-      <div className="container mx-auto max-w-4xl py-10">
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
         <div className="mb-6 flex items-center gap-3">
           <Button
             variant="ghost"
@@ -123,7 +123,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">Your Orders</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Your Orders</h1>
         </div>
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center pt-6 pb-16 text-center">
@@ -143,7 +143,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
   }
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
           <Button
@@ -155,7 +155,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">Your Orders</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Your Orders</h1>
         </div>
         <div className="relative w-full max-w-xs">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
@@ -180,56 +180,56 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
         ) : (
           filteredOrders.map((order) => (
             <Card key={order.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/50 px-6 py-4">
-                <div className="flex flex-col justify-between gap-y-2 md:flex-row md:items-center">
+              <CardHeader className="bg-muted/50 px-4 sm:px-6 py-4">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                   <div>
-                    <CardTitle className="flex flex-col gap-2 text-base font-medium md:flex-row md:items-center">
-                      Order #{order.orderNumber}
+                    <CardTitle className="flex flex-wrap items-center gap-2 text-base font-semibold">
+                      <span>Order #{order.orderNumber}</span>
                       <Badge
                         variant={getStatusBadgeVariant(order.status)}
-                        className="w-fit md:ml-2"
+                        className="text-xs"
                       >
                         {formatStatus(order.status)}
                       </Badge>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs mt-0.5">
                       Placed{" "}
                       {formatDistanceToNow(new Date(order.createdAt), {
                         addSuffix: true,
                       })}
                     </CardDescription>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">
+                  <div className="text-left sm:text-right mt-2 sm:mt-0">
+                    <div className="text-base sm:text-lg font-bold text-foreground">
                       {formatPrice(order.totalAmount)}
                     </div>
                     <div className="text-muted-foreground text-xs">
                       {order.paymentStatus === "PAID"
-                        ? "Paid"
-                        : "Payment Pending"}
+                        ? "● Paid"
+                        : "● Payment Pending"}
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-6 py-4">
+              <CardContent className="px-4 sm:px-6 py-4">
                 <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span className="font-medium">Items:</span>{" "}
-                      {order.items?.length || 0}
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <div>
+                      <span className="font-medium text-muted-foreground">Items:</span>{" "}
+                      <span className="font-semibold text-foreground">{order.items?.length || 0}</span>
                     </div>
-                    <div className="text-sm">
-                      <span className="font-medium">Shipping:</span>{" "}
-                      {order.shippingMethod}
+                    <div>
+                      <span className="font-medium text-muted-foreground">Shipping:</span>{" "}
+                      <span className="font-semibold text-foreground uppercase">{order.shippingMethod}</span>
                     </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex-wrap gap-3 border-t px-6 py-4">
-                <Button asChild variant="outline" size="sm" className="gap-1">
+              <CardFooter className="flex flex-wrap items-center gap-2.5 border-t px-4 sm:px-6 py-3.5 bg-muted/20">
+                <Button asChild variant="outline" size="sm" className="gap-1 text-xs">
                   <Link href={`/account/orders/${order.id}`}>
                     View Details
-                    <ChevronRight className="ml-1 h-4 w-4" />
+                    <ChevronRight className="ml-1 h-3.5 w-3.5" />
                   </Link>
                 </Button>
 
@@ -240,6 +240,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="text-xs text-destructive hover:bg-destructive/10"
                     onClick={() => handleCancelOrder(order.id)}
                     disabled={isLoading === order.id}
                   >

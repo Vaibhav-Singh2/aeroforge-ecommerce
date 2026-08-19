@@ -147,17 +147,17 @@ export default function PrintOrdersPage() {
   };
 
   return (
-    <div className="space-y-6 px-1 pb-5 md:px-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">3D Print Orders</h1>
-        <Button asChild>
+    <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">3D Print Orders</h1>
+        <Button asChild size="sm">
           <Link href="/services/3d-printing">Request New Print</Link>
         </Button>
       </div>
 
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Your 3D Print History</CardTitle>
+        <CardHeader className="pb-2 px-4 sm:px-6">
+          <CardTitle className="text-lg">Your 3D Print History</CardTitle>
         </CardHeader>
         <CardContent>
           {" "}

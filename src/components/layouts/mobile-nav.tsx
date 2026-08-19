@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useUser, useClerk, UserButton } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   Plane,
   Wrench,
@@ -17,7 +18,13 @@ import {
   X,
   User,
   ChevronRight,
+  Scale,
+  Rocket,
+  LayoutDashboard,
+  Package,
+  LogOut,
 } from "lucide-react";
+import { AeroForgeLogo } from "@/components/ui/logo";
 
 type NavItem = {
   title: string;
@@ -42,6 +49,11 @@ const navItems: NavItem[] = [
     icon: ShoppingBag,
   },
   {
+    title: "Drone Builder Studio",
+    href: "/builder",
+    icon: Rocket,
+  },
+  {
     title: "Repair Services",
     href: "/services/repair",
     icon: Wrench,
@@ -52,9 +64,14 @@ const navItems: NavItem[] = [
     icon: Printer,
   },
   {
-    title: "My Account",
+    title: "Compare Hardware",
+    href: "/compare",
+    icon: Scale,
+  },
+  {
+    title: "My Account Dashboard",
     href: "/account",
-    icon: Cog,
+    icon: LayoutDashboard,
   },
 ];
 
@@ -65,17 +82,15 @@ interface MobileNavProps {
 export function MobileNav({ onClose }: MobileNavProps) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
-  const { openSignIn } = useClerk();
+  const { openSignIn, signOut } = useClerk();
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden">
-      <div className="fixed inset-y-0 right-0 flex w-full max-w-xs flex-col border-l bg-background shadow-2xl transition-all duration-300">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm transition-all duration-200 lg:hidden">
+      <div className="fixed inset-y-0 left-0 flex w-full max-w-xs flex-col border-r bg-background shadow-2xl animate-in slide-in-from-left">
         {/* Header */}
-        <div className="flex h-16 items-center justify-between border-b px-5">
-          <Link href="/" onClick={onClose} className="flex items-center gap-2">
-            <span className="text-lg font-bold tracking-tight text-foreground">
-              AeroForge Labs
-            </span>
+        <div className="flex h-16 items-center justify-between border-b px-4">
+          <Link href="/" onClick={onClose} className="flex items-center">
+            <AeroForgeLogo />
           </Link>
           <Button
             variant="ghost"
@@ -129,31 +144,62 @@ export function MobileNav({ onClose }: MobileNavProps) {
           {!isLoaded ? (
             <div className="h-12 w-full animate-pulse rounded-lg bg-muted" />
           ) : isSignedIn ? (
-            <div className="flex items-center justify-between rounded-lg border bg-background/60 p-2.5 shadow-xs">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <UserButton
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: "h-8 w-8",
-                    },
-                  }}
-                />
-                <div className="flex flex-col truncate">
-                  <span className="truncate text-xs font-semibold text-foreground">
-                    {user?.fullName || user?.firstName || "My Account"}
-                  </span>
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {user?.primaryEmailAddress?.emailAddress || "Signed in"}
-                  </span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between rounded-lg border bg-background/80 p-2.5 shadow-xs">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border bg-muted">
+                    {user?.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt="Avatar"
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary text-xs font-bold font-mono">
+                        {user?.firstName?.[0] || "U"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col truncate">
+                    <span className="truncate text-xs font-semibold text-foreground">
+                      {user?.fullName || user?.firstName || "AeroPilot"}
+                    </span>
+                    <span className="truncate text-[10px] text-muted-foreground font-mono">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </span>
+                  </div>
                 </div>
+                <Link
+                  href="/account"
+                  onClick={onClose}
+                  className="text-xs font-semibold text-primary hover:underline px-2 py-1"
+                >
+                  Hub
+                </Link>
               </div>
-              <Link
-                href="/account"
-                onClick={onClose}
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                Profile
-              </Link>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <Link
+                  href="/account/orders"
+                  onClick={onClose}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border bg-background py-2 text-[11px] font-medium text-foreground hover:bg-muted"
+                >
+                  <Package className="h-3.5 w-3.5 text-primary" />
+                  <span>Orders</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    onClose();
+                    signOut();
+                  }}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border bg-background py-2 text-[11px] font-medium text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           ) : (
             <Button

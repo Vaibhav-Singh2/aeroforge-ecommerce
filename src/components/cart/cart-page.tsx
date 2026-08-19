@@ -22,33 +22,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useUser } from "@clerk/nextjs";
 
 export function CartPage() {
   const { items } = useAppSelector((state) => state.cart);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSignedIn } = useUser();
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  // Fetch cart items from the server on component mount
+  // Load cart items: sync from server if authenticated without overwriting guest items
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const cartItems = await getUserCartItems();
-        dispatch(setCartItems(cartItems));
-      } catch (error) {
-        console.error("Error fetching cart items:", error);
-        dispatch(
-          addToast({
-            type: "error",
-            title: "Error",
-            message: "Failed to load your cart. Please try again.",
-          }),
-        );
-      }
-    };
-
-    fetchCartItems();
-  }, [dispatch]);
+    if (isSignedIn) {
+      getUserCartItems()
+        .then((serverItems) => {
+          if (serverItems && serverItems.length > 0) {
+            dispatch(setCartItems(serverItems));
+          }
+        })
+        .catch((error) => {
+          console.warn("Guest or offline cart mode:", error);
+        });
+    }
+  }, [isSignedIn, dispatch]);
 
   // Handle quantity change
   const handleQuantityChange = async (id: string, quantity: number) => {

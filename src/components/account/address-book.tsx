@@ -104,7 +104,7 @@ export function AddressBook() {
 
   if (addressLoading) {
     return (
-      <div className="container mx-auto max-w-4xl py-10">
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex flex-col justify-between gap-4 pb-4 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
             <Button
@@ -117,8 +117,8 @@ export function AddressBook() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-              <p className="text-muted-foreground">Manage your addresses</p>
+              <h1 className="mb-1 text-2xl sm:text-3xl font-bold">Address Book</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm">Manage your addresses</p>
             </div>
           </div>
         </div>
@@ -141,7 +141,7 @@ export function AddressBook() {
   // Render empty state if no addresses
   if (addresses.length === 0) {
     return (
-      <div className="container mx-auto max-w-4xl py-10">
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
             <Button
@@ -154,13 +154,13 @@ export function AddressBook() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-              <p className="text-muted-foreground">Manage your addresses</p>
+              <h1 className="mb-1 text-2xl sm:text-3xl font-bold">Address Book</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm">Manage your addresses</p>
             </div>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2" size="sm">
                 <Plus className="h-4 w-4" />
                 Add Address
               </Button>
@@ -185,32 +185,15 @@ export function AddressBook() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center pt-6 pb-16 text-center">
             <MapPin className="text-muted-foreground mb-4 h-16 w-16" />
-            <h2 className="mb-2 text-xl font-semibold">No addresses yet</h2>
+            <h2 className="mb-2 text-xl font-semibold">No addresses saved</h2>
             <p className="text-muted-foreground mb-6 max-w-sm">
-              Add your first address to make checkout faster and easier.
+              You haven&apos;t saved any shipping addresses yet. Add one to speed up
+              your checkout process.
             </p>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Address
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-125">
-                <DialogHeader>
-                  <DialogTitle>Add New Address</DialogTitle>
-                  <DialogDescription>
-                    Add a new address to your account.
-                  </DialogDescription>
-                </DialogHeader>
-                <AddressForm
-                  onSuccess={() => {
-                    setDialogOpen(false);
-                    router.refresh();
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Your First Address
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -218,7 +201,7 @@ export function AddressBook() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-5 py-10">
+    <div className="container mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-10">
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
           <Button
@@ -231,8 +214,8 @@ export function AddressBook() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="mb-1 text-3xl font-bold">Address Book</h1>
-            <p className="text-muted-foreground">Manage your addresses</p>
+            <h1 className="mb-1 text-2xl sm:text-3xl font-bold">Address Book</h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">Manage your addresses</p>
           </div>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

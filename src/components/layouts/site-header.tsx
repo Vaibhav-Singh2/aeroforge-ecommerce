@@ -22,6 +22,7 @@ import {
 import { openCart, type CartItem } from "@/lib/redux/features/cartSlice";
 import { openWishlist } from "@/lib/redux/features/wishlistSlice";
 import { AeroForgeLogo } from "@/components/ui/logo";
+import { UserAccountNav } from "@/components/layouts/user-account-nav";
 
 export function SiteHeader() {
   const dispatch = useAppDispatch();
@@ -70,21 +71,21 @@ export function SiteHeader() {
       )}
     >
       <div className="flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-2">
+        <div className="flex items-center gap-3 xl:gap-6 min-w-0">
+          <Link href="/" className="flex items-center space-x-2 shrink-0">
             <AeroForgeLogo />
           </Link>
           <MainNav />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {!isSearchOpen ? (
             <>
               {/* Desktop Search Bar Trigger */}
               <button
                 type="button"
                 onClick={() => dispatch(openSearch())}
-                className="hover:bg-muted/80 hover:border-primary/40 hidden h-9 w-64 items-center justify-between rounded-lg border bg-muted/40 px-3 text-xs text-muted-foreground transition-all md:flex lg:w-80"
+                className="hover:bg-muted/80 hover:border-primary/40 hidden h-9 w-44 lg:w-56 xl:w-72 items-center justify-between rounded-lg border bg-muted/40 px-3 text-xs text-muted-foreground transition-all md:flex"
               >
                 <div className="flex items-center gap-2 truncate">
                   <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -100,19 +101,21 @@ export function SiteHeader() {
                 variant="ghost"
                 size="icon"
                 onClick={() => dispatch(openSearch())}
-                className="hover:bg-muted transition-all duration-200 md:hidden"
+                className="hover:bg-muted transition-all duration-200 md:hidden h-8 w-8"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
                 <span className="sr-only">Search</span>
               </Button>
 
-              <ThemeToggle />
+              <div className="hidden sm:inline-flex">
+                <ThemeToggle />
+              </div>
 
               {/* Wishlist Trigger */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative hidden sm:inline-flex"
                 onClick={() => dispatch(openWishlist())}
                 title="Pilot Wishlist"
               >
@@ -133,7 +136,7 @@ export function SiteHeader() {
                 variant="ghost"
                 size="icon"
                 asChild
-                className="relative hidden sm:inline-flex"
+                className="relative hidden md:inline-flex"
                 title="Compare Matrix"
               >
                 <Link href="/compare">
@@ -150,17 +153,18 @@ export function SiteHeader() {
                 </Link>
               </Button>
 
+              {/* Cart Trigger */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative h-8 w-8 sm:h-9 sm:w-9"
                 onClick={() => dispatch(openCart())}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 {cartItemsCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                    className="absolute -top-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center p-0 text-[10px] sm:text-xs"
                   >
                     {cartItemsCount}
                   </Badge>
@@ -168,38 +172,19 @@ export function SiteHeader() {
                 <span className="sr-only">Cart</span>
               </Button>
 
-              <div className="flex h-9 w-9 items-center justify-center">
-                {!isLoaded ? (
-                  <div className="bg-muted/70 h-7 w-7 animate-pulse rounded-full" />
-                ) : isSignedIn ? (
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        userButtonAvatarBox: "h-7 w-7",
-                      },
-                    }}
-                  />
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9"
-                    title="Sign In"
-                    onClick={() => openSignIn()}
-                  >
-                    <User className="h-5 w-5" />
-                    <span className="sr-only">Sign In</span>
-                  </Button>
-                )}
+              {/* User Account Menu / Sign In */}
+              <div className="hidden sm:inline-flex">
+                <UserAccountNav />
               </div>
 
+              {/* Mobile Menu Trigger */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className="lg:hidden h-8 w-8 sm:h-9 sm:w-9"
                 onClick={() => dispatch(openMobileMenu())}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sr-only">Menu</span>
               </Button>
             </>

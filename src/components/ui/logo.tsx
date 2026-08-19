@@ -63,20 +63,20 @@ export function AeroForgeIcon({ size = 28, className, ...props }: LogoProps) {
 
 export function AeroForgeLogo({ className }: { className?: string }) {
   return (
-    <div className={cn("group flex items-center gap-2.5 select-none", className)}>
-      <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-sky-500/20 via-sky-600/10 to-transparent border border-sky-500/30 p-1 shadow-sm backdrop-blur-xs transition-all duration-300 group-hover:border-sky-400/60 group-hover:shadow-sky-500/20 group-hover:shadow-md">
-        <AeroForgeIcon size={22} />
+    <div className={cn("group flex items-center gap-2 select-none shrink-0", className)}>
+      <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-linear-to-br from-sky-500/20 via-sky-600/10 to-transparent border border-sky-500/30 p-1 shadow-sm backdrop-blur-xs transition-all duration-300 group-hover:border-sky-400/60 group-hover:shadow-sky-500/20 group-hover:shadow-md">
+        <AeroForgeIcon size={20} />
       </div>
       <div className="flex flex-col">
-        <div className="flex items-center gap-1.5 leading-none">
-          <span className="text-base font-extrabold tracking-tight text-foreground font-heading">
+        <div className="flex items-center gap-1 leading-none">
+          <span className="text-sm sm:text-base font-extrabold tracking-tight text-foreground font-heading">
             AeroForge
           </span>
-          <span className="text-xs font-bold uppercase tracking-widest text-sky-500">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-sky-500">
             Labs
           </span>
         </div>
-        <span className="text-[9px] font-mono font-medium tracking-wider text-muted-foreground uppercase">
+        <span className="text-[8px] sm:text-[9px] font-mono font-medium tracking-wider text-muted-foreground uppercase hidden sm:block">
           Aeronautics & FPV
         </span>
       </div>
