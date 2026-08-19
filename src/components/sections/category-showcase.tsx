@@ -23,7 +23,7 @@ const categories = [
     description:
       "Fixed-wing aerobatic aircraft, high-speed EDF jets, and long-range autonomous FPV wings",
     image:
-      "https://images.unsplash.com/photo-1519074069444-1ba4ea16e828?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 3,

@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://aeroforge-labs.vercel.app"
+  ),
   title: "AeroForge Labs – Next-Gen Drones, Aeronautics & Rapid Prototyping",
   description:
     "AeroForge Labs – Advanced e-commerce and engineering hub for high-performance drones, RC planes, precision parts, on-demand 3D printing, and hardware repair.",
