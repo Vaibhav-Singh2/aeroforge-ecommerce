@@ -49,6 +49,14 @@ export default async function CategoryPage({
   let type = rawSlug[0];
   let category = rawSlug[1];
 
+  const awaitedSearchParams = await searchParams;
+  const currentPage = awaitedSearchParams.page
+    ? parseInt(awaitedSearchParams.page)
+    : 1;
+  const itemsPerPage = 15;
+  const sortOption = awaitedSearchParams.sort || "newest";
+  const searchQuery = awaitedSearchParams.q || "";
+
   // Resolve aliases and direct category slugs
   if (type === "drones") {
     type = "projects";

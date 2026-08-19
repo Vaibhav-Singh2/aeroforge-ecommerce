@@ -63,11 +63,20 @@ export function CheckoutPaymentForm({
             </div>
           </RadioGroup>
 
+          <div className="border-primary/20 bg-primary/5 text-muted-foreground flex items-center gap-2.5 rounded-lg border p-3.5 text-xs leading-relaxed">
+            <span className="bg-primary/10 text-primary shrink-0 rounded px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider">
+              Sandbox Mode
+            </span>
+            <span>
+              Razorpay is running in <strong>Test Mode</strong>. You can safely complete a mock order using test credentials.
+            </span>
+          </div>
+
           <div className="bg-muted/50 text-muted-foreground rounded-lg p-4 text-sm">
             <p>
               {paymentMethod === "razorpay"
-                ? "You'll be redirected to Razorpay's secure payment page to complete your purchase."
-                : "You can pay in cash when your order is delivered."}
+                ? "You'll be redirected to Razorpay's secure payment modal to complete your test purchase."
+                : "You can place a simulated cash on delivery order."}
             </p>
           </div>
         </div>

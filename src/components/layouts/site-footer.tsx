@@ -166,6 +166,9 @@ export function SiteFooter() {
             <p className="text-muted-foreground text-sm">
               &copy; {new Date().getFullYear()} {`AeroForge Labs`}. All rights reserved.
             </p>
+            <p className="text-muted-foreground/70 mt-1 text-xs">
+              Non-commercial engineering portfolio showcase by Vaibhav Singh. Simulated test transactions only.
+            </p>
           </div>
           <div className="flex gap-6">
             <Link

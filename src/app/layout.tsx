@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { SiteHeader } from "@/components/layouts/site-header";
 import { SiteFooter } from "@/components/layouts/site-footer";
+import { DemoBanner } from "@/components/layouts/demo-banner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { ClerkThemeProvider } from "@/components/providers/clerk-theme-provider";
@@ -81,6 +82,7 @@ export default function RootLayout({
           <ClerkThemeProvider>
             <ReduxProvider>
               <div className="relative flex min-h-screen flex-col">
+                <DemoBanner />
                 <SiteHeader />
                 <main className="flex-1">{children}</main>
                 <SiteFooter />
