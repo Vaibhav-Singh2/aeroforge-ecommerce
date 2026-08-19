@@ -30,13 +30,7 @@ export const metadata: Metadata = {
   description:
     "AeroForge Labs – Advanced e-commerce and engineering hub for high-performance drones, RC planes, precision parts, on-demand 3D printing, and hardware repair.",
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
-    apple: [
-      { url: "/icon.png" },
-    ],
+    icon: "/favicon.ico",
   },
   openGraph: {
     title: "AeroForge Labs – Next-Gen Drones, Aeronautics & Rapid Prototyping",
